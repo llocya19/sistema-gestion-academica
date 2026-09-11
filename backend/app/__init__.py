@@ -5,7 +5,9 @@ from app.config.settings import Config
 from app.extensions.database import db
 from app.extensions.jwt import jwt
 from app.extensions.cors import cors
+from app.extensions.migrate import migrate
 
+from app.modules.auth import models
 
 def create_app():
 
@@ -20,6 +22,8 @@ def create_app():
     jwt.init_app(app)
 
     cors.init_app(app)
+    
+    migrate.init_app(app, db)
 
 
     @app.route("/")
