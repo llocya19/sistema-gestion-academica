@@ -355,3 +355,86 @@ class TeacherCourse(db.Model):
         db.DateTime,
         default=datetime.utcnow
     )
+
+# ==========================================================
+# TABLA: enrollments
+#
+# Representa la matrícula de un estudiante
+# dentro de un curso académico.
+#
+# Relación:
+#
+# students N ----- M courses
+#
+# Esta tabla será utilizada para:
+# - notas
+# - asistencia
+# - incidencias
+# - análisis IA
+# ==========================================================
+
+
+class Enrollment(db.Model):
+
+    __tablename__ = "enrollments"
+
+
+    # Identificador de matrícula
+    id = db.Column(
+        db.Integer,
+        primary_key=True
+    )
+
+
+    # Estudiante matriculado
+    student_id = db.Column(
+        db.Integer,
+        db.ForeignKey("students.id"),
+        nullable=False
+    )
+
+
+    # Curso donde está matriculado
+    course_id = db.Column(
+        db.Integer,
+        db.ForeignKey("courses.id"),
+        nullable=False
+    )
+
+
+    # Periodo académico
+    # Ejemplo:
+    # 2026-I
+    academic_period = db.Column(
+        db.String(20),
+        nullable=False
+    )
+
+
+    # Estado:
+    # activo
+    # retirado
+    status = db.Column(
+        db.Boolean,
+        default=True
+    )
+
+
+    created_at = db.Column(
+        db.DateTime,
+        default=datetime.utcnow
+    )
+
+    # Evita matrículas duplicadas
+    # Un estudiante no puede estar
+    # dos veces en el mismo curso
+    # durante el mismo periodo académico
+
+    __table_args__ = (
+        db.UniqueConstraint(
+            "student_id",
+            "course_id",
+            "academic_period",
+            name="unique_student_course_period"
+        ),
+    )
