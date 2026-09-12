@@ -8,6 +8,7 @@ from app.extensions.cors import cors
 from app.extensions.migrate import migrate
 
 from app.modules.auth import models
+from app.modules.academic import models
 
 def create_app():
 
