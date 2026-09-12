@@ -438,3 +438,144 @@ class Enrollment(db.Model):
             name="unique_student_course_period"
         ),
     )
+
+# ==========================================================
+# TABLA: sessions
+#
+# Registra las sesiones de clase realizadas por el docente.
+#
+# Relación:
+#
+# teacher_courses 1 ----- N sessions
+#
+# Una asignación docente-curso puede tener
+# muchas sesiones.
+#
+# Ejemplo:
+#
+# Docente:
+# Juan Pérez
+#
+# Curso:
+# Matemática
+#
+# Sesiones:
+# - Semana 1: Funciones
+# - Semana 2: Límites
+#
+# Esta tabla permite a la directora verificar
+# la trazabilidad de la enseñanza.
+# ==========================================================
+
+
+class Session(db.Model):
+
+    __tablename__ = "sessions"
+
+
+    # Identificador de sesión
+    id = db.Column(
+        db.Integer,
+        primary_key=True
+    )
+
+
+    # Relación con docente-curso
+    #
+    # Indica qué docente dictó
+    # esta sesión y en qué curso.
+    teacher_course_id = db.Column(
+        db.Integer,
+        db.ForeignKey("teacher_courses.id"),
+        nullable=False
+    )
+
+
+    # Nombre de la sesión
+    # Ejemplo:
+    # Introducción a derivadas
+    title = db.Column(
+        db.String(150),
+        nullable=False
+    )
+
+
+    # Descripción de lo realizado
+    description = db.Column(
+        db.Text
+    )
+
+
+    # Fecha en la que se realizó la sesión
+    session_date = db.Column(
+        db.Date,
+        nullable=False
+    )
+
+
+    created_at = db.Column(
+        db.DateTime,
+        default=datetime.utcnow
+    )
+# ==========================================================
+# TABLA: topics
+#
+# Representa los temas desarrollados dentro
+# de una sesión.
+#
+# Relación:
+#
+# sessions 1 ----- N topics
+#
+# Ejemplo:
+#
+# Sesión:
+# Derivadas
+#
+# Temas:
+# - Concepto de derivada
+# - Reglas de derivación
+#
+# Estos datos serán utilizados por la IA
+# para relacionar dificultades académicas
+# con temas específicos.
+# ==========================================================
+
+
+class Topic(db.Model):
+
+    __tablename__ = "topics"
+
+
+    # Identificador del tema
+    id = db.Column(
+        db.Integer,
+        primary_key=True
+    )
+
+
+    # Sesión donde se enseñó el tema
+    session_id = db.Column(
+        db.Integer,
+        db.ForeignKey("sessions.id"),
+        nullable=False
+    )
+
+
+    # Nombre del tema
+    name = db.Column(
+        db.String(150),
+        nullable=False
+    )
+
+
+    # Descripción del tema
+    description = db.Column(
+        db.Text
+    )
+
+
+    created_at = db.Column(
+        db.DateTime,
+        default=datetime.utcnow
+    )
