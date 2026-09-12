@@ -757,3 +757,156 @@ class Grade(db.Model):
         db.DateTime,
         default=datetime.utcnow
     )
+
+# ==========================================================
+# TABLA: attendance
+#
+# Registra la asistencia de los estudiantes
+# durante una sesión de clase.
+#
+# Relación:
+#
+# sessions 1 ----- N attendance
+#
+# students 1 ----- N attendance
+#
+# Esta información será usada por la IA
+# para calcular indicadores de asistencia.
+# ==========================================================
+
+
+class Attendance(db.Model):
+
+    __tablename__ = "attendance"
+
+
+    # Identificador
+    id = db.Column(
+        db.Integer,
+        primary_key=True
+    )
+
+
+    # Sesión de clase
+    session_id = db.Column(
+        db.Integer,
+        db.ForeignKey("sessions.id"),
+        nullable=False
+    )
+
+
+    # Estudiante
+    student_id = db.Column(
+        db.Integer,
+        db.ForeignKey("students.id"),
+        nullable=False
+    )
+
+
+    # Estado de asistencia
+    #
+    # PRESENTE
+    # FALTA
+    # TARDANZA
+    # JUSTIFICADO
+
+    status = db.Column(
+        db.String(20),
+        nullable=False
+    )
+
+
+    # Observación del docente
+    observation = db.Column(
+        db.Text
+    )
+
+
+    created_at = db.Column(
+        db.DateTime,
+        default=datetime.utcnow
+    )
+
+# ==========================================================
+# TABLA: incidents
+#
+# Registra situaciones que afectan
+# el rendimiento académico.
+#
+# Ejemplos:
+#
+# - Bajo rendimiento
+# - Inasistencia frecuente
+# - Dificultad en un tema
+#
+# Será utilizado por la IA para encontrar
+# causas del bajo rendimiento.
+# ==========================================================
+
+
+class Incident(db.Model):
+
+    __tablename__ = "incidents"
+
+
+    id = db.Column(
+        db.Integer,
+        primary_key=True
+    )
+
+
+    # Estudiante involucrado
+    student_id = db.Column(
+        db.Integer,
+        db.ForeignKey("students.id"),
+        nullable=False
+    )
+
+
+    # Curso donde ocurre
+    teacher_course_id = db.Column(
+        db.Integer,
+        db.ForeignKey("teacher_courses.id"),
+        nullable=False
+    )
+
+
+    # Tipo de incidencia
+    #
+    # Bajo rendimiento
+    # Inasistencia
+    # Dificultad temática
+
+    type = db.Column(
+        db.String(100),
+        nullable=False
+    )
+
+
+    # Detalle de la incidencia
+    description = db.Column(
+        db.Text,
+        nullable=False
+    )
+
+
+    # Baja
+    # Media
+    # Alta
+
+    severity = db.Column(
+        db.String(20),
+        nullable=False
+    )
+
+
+    incident_date = db.Column(
+        db.Date,
+        nullable=False
+    )
+
+
+    created_at = db.Column(
+        db.DateTime,
+        default=datetime.utcnow
+    )
