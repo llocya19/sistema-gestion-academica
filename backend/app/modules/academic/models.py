@@ -579,3 +579,181 @@ class Topic(db.Model):
         db.DateTime,
         default=datetime.utcnow
     )
+
+# ==========================================================
+# TABLA: evaluations
+#
+# Registra las evaluaciones realizadas por el docente.
+#
+# IMPORTANTE:
+#
+# El examen es físico.
+# El sistema NO almacena preguntas ni respuestas.
+#
+# Solo registra:
+# - información de la evaluación
+# - fecha
+# - evidencia del examen
+#
+# Relación:
+#
+# teacher_courses 1 ----- N evaluations
+#
+# ==========================================================
+
+
+class Evaluation(db.Model):
+
+    __tablename__ = "evaluations"
+
+
+    # Identificador de evaluación
+    id = db.Column(
+        db.Integer,
+        primary_key=True
+    )
+
+
+    # Curso y docente responsable
+    teacher_course_id = db.Column(
+        db.Integer,
+        db.ForeignKey("teacher_courses.id"),
+        nullable=False
+    )
+
+
+    # Nombre de evaluación
+    # Ejemplo:
+    # Examen Parcial 1
+    # Examen Final
+    name = db.Column(
+        db.String(150),
+        nullable=False
+    )
+
+
+    # Tipo:
+    # parcial
+    # final
+    # práctica
+    # tarea
+    evaluation_type = db.Column(
+        db.String(50),
+        nullable=False
+    )
+
+
+    # Fecha realizada
+    evaluation_date = db.Column(
+        db.Date,
+        nullable=False
+    )
+
+
+    # Evidencia del examen físico
+    # Ruta de la imagen almacenada
+    evidence_url = db.Column(
+        db.String(255),
+        nullable=True
+    )
+
+
+    created_at = db.Column(
+        db.DateTime,
+        default=datetime.utcnow
+    )
+
+# ==========================================================
+# TABLA: evaluation_topics
+#
+# Relación muchos a muchos entre:
+#
+# evaluaciones
+#        |
+#        |
+# temas evaluados
+#
+# Permite saber qué temas fueron evaluados
+# en cada examen.
+#
+# ==========================================================
+
+
+class EvaluationTopic(db.Model):
+
+    __tablename__ = "evaluation_topics"
+
+
+    id = db.Column(
+        db.Integer,
+        primary_key=True
+    )
+
+
+    evaluation_id = db.Column(
+        db.Integer,
+        db.ForeignKey("evaluations.id"),
+        nullable=False
+    )
+
+
+    topic_id = db.Column(
+        db.Integer,
+        db.ForeignKey("topics.id"),
+        nullable=False
+    )
+
+# ==========================================================
+# TABLA: grades
+#
+# Guarda la nota obtenida por cada estudiante
+# en una evaluación.
+#
+# Esta tabla será usada para:
+#
+# - promedio individual
+# - promedio del curso
+# - indicador docente-curso
+# - análisis IA
+#
+# ==========================================================
+
+
+class Grade(db.Model):
+
+    __tablename__ = "grades"
+
+
+    id = db.Column(
+        db.Integer,
+        primary_key=True
+    )
+
+
+    # Estudiante evaluado
+    student_id = db.Column(
+        db.Integer,
+        db.ForeignKey("students.id"),
+        nullable=False
+    )
+
+
+    # Evaluación realizada
+    evaluation_id = db.Column(
+        db.Integer,
+        db.ForeignKey("evaluations.id"),
+        nullable=False
+    )
+
+
+    # Nota global del examen físico
+    grade = db.Column(
+        db.Numeric(5,2),
+        nullable=False
+    )
+
+
+    created_at = db.Column(
+        db.DateTime,
+        default=datetime.utcnow
+    )
