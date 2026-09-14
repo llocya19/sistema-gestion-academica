@@ -3,72 +3,124 @@ from datetime import datetime
 from app.extensions.database import db
 
 
+
 # ==========================================================
 # TABLA: academic_indicators
 #
-# Guarda resultados históricos del análisis académico.
+# Guarda el historial de análisis académico generado
+# por el módulo IA.
 #
-# Estos datos serán utilizados posteriormente
-# por el módulo de IA.
+# Relación:
+#
+# estudiante 1 ----- N análisis IA
 #
 # ==========================================================
 
 
-class AcademicIndicator(db.Model):
+class AnalisisIA(db.Model):
 
     __tablename__ = "academic_indicators"
 
 
-    # Identificador
     id = db.Column(
         db.Integer,
         primary_key=True
     )
 
 
-    # Estudiante analizado
-    student_id = db.Column(
+    estudiante_id = db.Column(
         db.Integer,
         db.ForeignKey("students.id"),
         nullable=False
     )
 
 
-    # Promedio académico calculado
-    average_grade = db.Column(
+    promedio = db.Column(
         db.Numeric(5,2),
         nullable=False
     )
 
 
-    # Porcentaje de asistencia
-    attendance_percentage = db.Column(
+    porcentaje_asistencia = db.Column(
         db.Numeric(5,2),
         nullable=False
     )
 
 
-    # Número de incidencias
-    incidents_count = db.Column(
+    cantidad_incidencias = db.Column(
         db.Integer,
         nullable=False
     )
 
 
-    # Riesgo:
-    # BAJO
-    # MEDIO
-    # ALTO
-
-    risk_level = db.Column(
+    nivel_riesgo = db.Column(
         db.String(20),
         nullable=False
     )
 
 
-    # Fecha de generación
-
-    generated_at = db.Column(
+    fecha_generacion = db.Column(
         db.DateTime,
         default=datetime.utcnow
+    )
+
+
+    estudiante = db.relationship(
+        "Estudiante",
+        backref="analisis_ia"
+    )
+
+
+
+# ==========================================================
+# TABLA: ai_recommendations
+#
+# Guarda recomendaciones generadas por IA.
+#
+# Relación:
+#
+# estudiante 1 ----- N recomendaciones
+#
+# ==========================================================
+
+
+class RecomendacionIA(db.Model):
+
+    __tablename__ = "ai_recommendations"
+
+
+    id = db.Column(
+        db.Integer,
+        primary_key=True
+    )
+
+
+    estudiante_id = db.Column(
+        db.Integer,
+        db.ForeignKey("students.id"),
+        nullable=False
+    )
+
+
+    categoria = db.Column(
+        db.String(50),
+        nullable=False
+    )
+
+
+    mensaje = db.Column(
+        db.Text,
+        nullable=False
+    )
+
+
+    fecha_generacion = db.Column(
+        db.DateTime,
+        default=datetime.utcnow
+    )
+
+
+    estudiante = db.relationship(
+        "Estudiante",
+        backref="recomendaciones_ia"
     )

@@ -1,138 +1,84 @@
+from sqlalchemy import func
+
 from app.extensions.database import db
 
-from app.modules.academic.models import Grade
-from app.modules.academic.models import Attendance
-from app.modules.academic.models import Incident
+from app.modules.academic.models import (
+    Estudiante,
+    Nota,
+    Asistencia,
+    Incidencia
+)
+
 
 
 # ==========================================================
-# INDICADOR 1:
-# CALCULAR PROMEDIO ACADÉMICO
-#
-# Obtiene todas las notas de un estudiante
-# y calcula su promedio general.
-#
-# Fuente:
-# tabla grades
-#
+# PROMEDIO DEL ESTUDIANTE
 # ==========================================================
 
 
-def calcular_promedio_estudiante(student_id):
+def calcular_promedio_estudiante(estudiante_id):
 
-    notas = (
-        db.session.query(Grade.grade)
-        .filter(
-            Grade.student_id == student_id
+    resultado = db.session.query(
+        func.avg(
+            Nota.nota
         )
-        .all()
-    )
+    ).filter(
+        Nota.estudiante_id == estudiante_id
+    ).scalar()
 
 
-    # Si no tiene notas registradas
-
-    if not notas:
+    if resultado is None:
         return 0
 
 
-    total = sum(
-        float(nota[0])
-        for nota in notas
-    )
-
-
-    promedio = total / len(notas)
-
-
-    return round(promedio, 2)
+    return float(resultado)
 
 
 
 # ==========================================================
-# INDICADOR 2:
-# CALCULAR PORCENTAJE DE ASISTENCIA
-#
-# Fuente:
-# tabla attendance
-#
-# Fórmula:
-#
-# asistencias / total registros * 100
-#
+# PORCENTAJE DE ASISTENCIA
 # ==========================================================
 
 
-def calcular_asistencia_estudiante(student_id):
+def calcular_asistencia_estudiante(estudiante_id):
+
+    total = Asistencia.query.filter_by(
+        estudiante_id=estudiante_id
+    ).count()
 
 
-    registros = (
-        db.session.query(Attendance)
-        .filter(
-            Attendance.student_id == student_id
-        )
-        .all()
-    )
-
-
-    if not registros:
+    if total == 0:
         return 0
 
 
-    presentes = 0
+    presentes = Asistencia.query.filter_by(
+        estudiante_id=estudiante_id,
+        estado="PRESENTE"
+    ).count()
 
 
-    for registro in registros:
-
-        if registro.status == "PRESENTE":
-
-            presentes += 1
-
-
-
-    porcentaje = (
-        presentes / len(registros)
-    ) * 100
-
-
-    return round(porcentaje, 2)
+    return round(
+        (presentes / total) * 100,
+        2
+    )
 
 
 
 # ==========================================================
-# INDICADOR 3:
 # CONTAR INCIDENCIAS
-#
-# Fuente:
-# tabla incidents
-#
 # ==========================================================
 
 
-def contar_incidencias(student_id):
+def contar_incidencias(estudiante_id):
 
-
-    cantidad = (
-        db.session.query(Incident)
-        .filter(
-            Incident.student_id == student_id
-        )
-        .count()
-    )
-
-
-    return cantidad
+    return Incidencia.query.filter_by(
+        estudiante_id=estudiante_id
+    ).count()
 
 
 
 # ==========================================================
-# INDICADOR 4:
-# NIVEL DE RIESGO ACADÉMICO
-#
-# Primera versión basada en reglas.
-#
-# Más adelante será reemplazada
-# por un modelo IA.
-#
+# NIVEL DE RIESGO
 # ==========================================================
 
 
@@ -143,26 +89,28 @@ def calcular_nivel_riesgo(
 ):
 
 
-    if (
-        promedio < 11
-        or asistencia < 60
-        or incidencias >= 3
-    ):
-
+    if promedio < 11:
         return "ALTO"
 
 
+    if asistencia < 70:
+        return "ALTO"
 
-    elif (
-        promedio < 14
-        or asistencia < 80
-        or incidencias >= 1
-    ):
 
+    if incidencias >= 3:
+        return "ALTO"
+
+
+    if promedio < 14:
         return "MEDIO"
 
 
+    if asistencia < 85:
+        return "MEDIO"
 
-    else:
 
-        return "BAJO"
+    if incidencias > 0:
+        return "MEDIO"
+
+
+    return "BAJO"

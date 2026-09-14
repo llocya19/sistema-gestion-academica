@@ -1,10 +1,10 @@
-# ==========================================================
-# SERVICIOS DE ANALISIS ACADEMICO
-#
-# Este archivo combina los indicadores calculados
-# para generar un resumen completo del estudiante.
-#
-# ==========================================================
+from app.extensions.database import db
+
+
+from app.modules.analytics.models import (
+    AnalisisIA,
+    RecomendacionIA
+)
 
 
 from app.modules.analytics.indicators import (
@@ -15,35 +15,27 @@ from app.modules.analytics.indicators import (
 )
 
 
-
-# ==========================================================
-# GENERAR INDICADOR DEL ESTUDIANTE
-#
-# Integra:
-#
-# - Promedio académico
-# - Porcentaje asistencia
-# - Cantidad de incidencias
-# - Nivel de riesgo
-#
-# ==========================================================
+from app.modules.analytics.recommendations import (
+    generar_recomendaciones
+)
 
 
-def generar_indicador_estudiante(student_id):
+
+def generar_indicador_estudiante(estudiante_id):
 
 
     promedio = calcular_promedio_estudiante(
-        student_id
+        estudiante_id
     )
 
 
     asistencia = calcular_asistencia_estudiante(
-        student_id
+        estudiante_id
     )
 
 
     incidencias = contar_incidencias(
-        student_id
+        estudiante_id
     )
 
 
@@ -54,9 +46,16 @@ def generar_indicador_estudiante(student_id):
     )
 
 
+    recomendaciones = generar_recomendaciones(
+        promedio,
+        asistencia,
+        incidencias
+    )
+
+
     return {
 
-        "student_id": student_id,
+        "estudiante_id": estudiante_id,
 
         "promedio": promedio,
 
@@ -64,6 +63,66 @@ def generar_indicador_estudiante(student_id):
 
         "incidencias": incidencias,
 
-        "riesgo": riesgo
+        "riesgo": riesgo,
+
+        "recomendaciones": recomendaciones
 
     }
+
+
+
+def guardar_indicador_estudiante(estudiante_id):
+
+
+    resultado = generar_indicador_estudiante(
+        estudiante_id
+    )
+
+
+    indicador = AnalisisIA(
+
+        estudiante_id=estudiante_id,
+
+        promedio=resultado["promedio"],
+
+        porcentaje_asistencia=resultado["asistencia"],
+
+        cantidad_incidencias=resultado["incidencias"],
+
+        nivel_riesgo=resultado["riesgo"]
+
+    )
+
+
+    db.session.add(indicador)
+
+
+
+    for item in resultado["recomendaciones"]:
+
+
+        recomendacion = RecomendacionIA(
+
+            estudiante_id=estudiante_id,
+
+            categoria=item["categoria"],
+
+            mensaje=item["mensaje"]
+
+        )
+
+
+        db.session.add(
+            recomendacion
+        )
+
+
+
+    db.session.commit()
+
+
+
+    resultado["guardado"] = True
+
+
+    return resultado

@@ -1,26 +1,5 @@
-# ==========================================================
-# MODELOS DEL MÓDULO ACADÉMICO
-# Sistema de Gestión Académica con IA
-#
-# Contiene:
-# - Personas
-# - Estudiantes
-# - Docentes
-# - Cursos
-# - Asignación docente-curso
-#
-# Estas tablas serán la base para:
-# - indicadores académicos
-# - análisis IA
-# - rendimiento individual
-# - rendimiento colectivo
-# ==========================================================
-
-
 from datetime import datetime
 
-# Importamos SQLAlchemy
-# Permite crear las tablas en PostgreSQL
 from app.extensions.database import db
 
 
@@ -28,46 +7,29 @@ from app.extensions.database import db
 # ==========================================================
 # TABLA: persons
 #
-# Guarda información general de una persona.
+# Información general de una persona.
 #
-# Se crea para evitar duplicidad de datos.
-#
-# Ejemplo:
-# Una misma persona puede ser:
+# Una persona puede ser:
 # - estudiante
 # - docente
 #
-# Relación:
+# Mantiene la normalización del DER.
 #
-# users 1 ----- 1 persons
-#
-# persons 1 ---- 1 students
-#
-# persons 1 ---- 1 teachers
 # ==========================================================
 
 
-class Person(db.Model):
+class Persona(db.Model):
 
     __tablename__ = "persons"
 
 
-    # Identificador principal
     id = db.Column(
         db.Integer,
         primary_key=True
     )
-    # ==========================================================
-    # RELACIÓN CON USUARIO DEL SISTEMA
-    #
-    # Permite enlazar:
-    #
-    # users
-    #    |
-    # persons
-    #
-    # Cada persona tiene una cuenta del sistema.
-    # ==========================================================
+
+
+    # Relación con usuario del sistema
 
     user_id = db.Column(
         db.Integer,
@@ -77,79 +39,70 @@ class Person(db.Model):
     )
 
 
-    # Documento de identidad
     dni = db.Column(
         db.String(20),
-        unique=True,
-        nullable=False
+        nullable=False,
+        unique=True
     )
 
 
-    # Nombres de la persona
-    first_name = db.Column(
+    nombres = db.Column(
         db.String(100),
         nullable=False
     )
 
 
-    # Apellidos
-    last_name = db.Column(
+    apellidos = db.Column(
         db.String(100),
         nullable=False
     )
 
 
-    # Número telefónico
-    phone = db.Column(
+    telefono = db.Column(
         db.String(20)
     )
 
 
-    # Dirección
-    address = db.Column(
+    direccion = db.Column(
         db.String(200)
     )
 
 
-    # Fecha de registro
     created_at = db.Column(
         db.DateTime,
         default=datetime.utcnow
     )
 
 
+    usuario = db.relationship(
+        "Usuario",
+        backref="persona",
+        uselist=False
+    )
 
 
 
 # ==========================================================
 # TABLA: students
 #
-# Representa a los estudiantes del sistema.
+# Información académica del estudiante.
 #
-# Guarda información académica,
-# no información personal.
+# Los datos personales están en Persona.
 #
-# Relación:
-#
-# persons 1 ----- 1 students
-#
-# Un estudiante pertenece a una persona.
 # ==========================================================
 
 
-class Student(db.Model):
+class Estudiante(db.Model):
 
     __tablename__ = "students"
 
 
-    # Identificador del estudiante
     id = db.Column(
         db.Integer,
         primary_key=True
     )
 
 
-    # Persona asociada
     person_id = db.Column(
         db.Integer,
         db.ForeignKey("persons.id"),
@@ -158,19 +111,14 @@ class Student(db.Model):
     )
 
 
-    # Código del estudiante
-    # Ejemplo:
-    # EST-2026-001
-    student_code = db.Column(
+    codigo_estudiante = db.Column(
         db.String(50),
-        unique=True,
-        nullable=False
+        nullable=False,
+        unique=True
     )
 
 
-    # Estado del estudiante
-    # activo / retirado
-    status = db.Column(
+    estado = db.Column(
         db.Boolean,
         default=True
     )
@@ -182,34 +130,33 @@ class Student(db.Model):
     )
 
 
+    persona = db.relationship(
+        "Persona",
+        backref="estudiante",
+        uselist=False
+    )
 
 
 
 # ==========================================================
 # TABLA: teachers
 #
-# Representa a los docentes.
-#
-# Relación:
-#
-# persons 1 ----- 1 teachers
+# Información académica del docente.
 #
 # ==========================================================
 
 
-class Teacher(db.Model):
+class Docente(db.Model):
 
     __tablename__ = "teachers"
 
 
-    # Identificador docente
     id = db.Column(
         db.Integer,
         primary_key=True
     )
 
 
-    # Persona asociada
     person_id = db.Column(
         db.Integer,
         db.ForeignKey("persons.id"),
@@ -218,18 +165,14 @@ class Teacher(db.Model):
     )
 
 
-    # Código docente
-    # Ejemplo:
-    # DOC-001
-    teacher_code = db.Column(
+    codigo_docente = db.Column(
         db.String(50),
-        unique=True,
-        nullable=False
+        nullable=False,
+        unique=True
     )
 
 
-    # Estado del docente
-    status = db.Column(
+    estado = db.Column(
         db.Boolean,
         default=True
     )
@@ -241,8 +184,11 @@ class Teacher(db.Model):
     )
 
 
-
-
+    persona = db.relationship(
+        "Persona",
+        backref="docente",
+        uselist=False
+    )
 
 # ==========================================================
 # TABLA: courses
@@ -250,14 +196,14 @@ class Teacher(db.Model):
 # Representa los cursos académicos.
 #
 # Ejemplo:
-# - Matemática
-# - Física
-# - Programación
+# Matemática
+# Física
+# Programación
 #
 # ==========================================================
 
 
-class Course(db.Model):
+class Curso(db.Model):
 
     __tablename__ = "courses"
 
@@ -268,25 +214,20 @@ class Course(db.Model):
     )
 
 
-    # Código del curso
-    # Ejemplo:
-    # MAT101
-    code = db.Column(
+    codigo = db.Column(
         db.String(50),
-        unique=True,
-        nullable=False
+        nullable=False,
+        unique=True
     )
 
 
-    # Nombre del curso
-    name = db.Column(
+    nombre = db.Column(
         db.String(150),
         nullable=False
     )
 
 
-    # Descripción
-    description = db.Column(
+    descripcion = db.Column(
         db.String(250)
     )
 
@@ -298,33 +239,19 @@ class Course(db.Model):
 
 
 
-
-
 # ==========================================================
 # TABLA: teacher_courses
 #
-# Tabla intermedia entre docentes y cursos.
+# Relación entre docentes y cursos.
 #
-# Relación:
-#
-# teachers N ----- M courses
-#
-#
-# Permite conocer:
+# Permite saber:
 #
 # Qué docente dicta qué curso.
-#
-# Esta tabla será utilizada para calcular:
-#
-# Indicador docente-curso:
-#
-# porcentaje basado en las notas
-# de todos sus estudiantes.
 #
 # ==========================================================
 
 
-class TeacherCourse(db.Model):
+class AsignacionDocente(db.Model):
 
     __tablename__ = "teacher_courses"
 
@@ -335,16 +262,14 @@ class TeacherCourse(db.Model):
     )
 
 
-    # Docente asignado
-    teacher_id = db.Column(
+    docente_id = db.Column(
         db.Integer,
         db.ForeignKey("teachers.id"),
         nullable=False
     )
 
 
-    # Curso asignado
-    course_id = db.Column(
+    curso_id = db.Column(
         db.Integer,
         db.ForeignKey("courses.id"),
         nullable=False
@@ -356,65 +281,75 @@ class TeacherCourse(db.Model):
         default=datetime.utcnow
     )
 
+
+    docente = db.relationship(
+        "Docente",
+        backref="asignaciones"
+    )
+
+
+    curso = db.relationship(
+        "Curso",
+        backref="asignaciones"
+    )
+
+
+    __table_args__ = (
+
+        db.UniqueConstraint(
+            "docente_id",
+            "curso_id",
+            name="unique_docente_curso"
+        ),
+
+    )
+
+
+
 # ==========================================================
 # TABLA: enrollments
 #
-# Representa la matrícula de un estudiante
-# dentro de un curso académico.
+# Matrícula del estudiante en un curso.
 #
 # Relación:
 #
-# students N ----- M courses
+# Estudiante N ----- M Curso
 #
-# Esta tabla será utilizada para:
-# - notas
-# - asistencia
-# - incidencias
-# - análisis IA
 # ==========================================================
 
 
-class Enrollment(db.Model):
+class Matricula(db.Model):
 
     __tablename__ = "enrollments"
 
 
-    # Identificador de matrícula
     id = db.Column(
         db.Integer,
         primary_key=True
     )
 
 
-    # Estudiante matriculado
-    student_id = db.Column(
+    estudiante_id = db.Column(
         db.Integer,
         db.ForeignKey("students.id"),
         nullable=False
     )
 
 
-    # Curso donde está matriculado
-    course_id = db.Column(
+    curso_id = db.Column(
         db.Integer,
         db.ForeignKey("courses.id"),
         nullable=False
     )
 
 
-    # Periodo académico
-    # Ejemplo:
-    # 2026-I
-    academic_period = db.Column(
+    periodo_academico = db.Column(
         db.String(20),
         nullable=False
     )
 
 
-    # Estado:
-    # activo
-    # retirado
-    status = db.Column(
+    estado = db.Column(
         db.Boolean,
         default=True
     )
@@ -425,89 +360,73 @@ class Enrollment(db.Model):
         default=datetime.utcnow
     )
 
-    # Evita matrículas duplicadas
-    # Un estudiante no puede estar
-    # dos veces en el mismo curso
-    # durante el mismo periodo académico
+
+    estudiante = db.relationship(
+        "Estudiante",
+        backref="matriculas"
+    )
+
+
+    curso = db.relationship(
+        "Curso",
+        backref="matriculas"
+    )
+
 
     __table_args__ = (
+
         db.UniqueConstraint(
-            "student_id",
-            "course_id",
-            "academic_period",
-            name="unique_student_course_period"
+            "estudiante_id",
+            "curso_id",
+            "periodo_academico",
+            name="unique_estudiante_curso_periodo"
         ),
+
     )
+
+
 
 # ==========================================================
 # TABLA: sessions
 #
-# Registra las sesiones de clase realizadas por el docente.
+# Registra las clases realizadas.
 #
-# Relación:
+# Una asignación docente-curso
+# puede tener muchas sesiones.
 #
-# teacher_courses 1 ----- N sessions
-#
-# Una asignación docente-curso puede tener
-# muchas sesiones.
-#
-# Ejemplo:
-#
-# Docente:
-# Juan Pérez
-#
-# Curso:
-# Matemática
-#
-# Sesiones:
-# - Semana 1: Funciones
-# - Semana 2: Límites
-#
-# Esta tabla permite a la directora verificar
-# la trazabilidad de la enseñanza.
 # ==========================================================
 
 
-class Session(db.Model):
+class Sesion(db.Model):
 
     __tablename__ = "sessions"
 
 
-    # Identificador de sesión
     id = db.Column(
         db.Integer,
         primary_key=True
     )
 
 
-    # Relación con docente-curso
-    #
-    # Indica qué docente dictó
-    # esta sesión y en qué curso.
-    teacher_course_id = db.Column(
+    asignacion_docente_id = db.Column(
         db.Integer,
         db.ForeignKey("teacher_courses.id"),
         nullable=False
     )
 
 
-    # Nombre de la sesión
-    # Ejemplo:
-    # Introducción a derivadas
-    title = db.Column(
+    titulo = db.Column(
         db.String(150),
         nullable=False
     )
 
 
-    # Descripción de lo realizado
-    description = db.Column(
+    descripcion = db.Column(
         db.Text
     )
 
 
-    # Fecha en la que se realizó la sesión
-    session_date = db.Column(
+    fecha_sesion = db.Column(
         db.Date,
         nullable=False
     )
@@ -517,60 +436,52 @@ class Session(db.Model):
         db.DateTime,
         default=datetime.utcnow
     )
+
+
+    asignacion_docente = db.relationship(
+        "AsignacionDocente",
+        backref="sesiones"
+    )
+
+
+
 # ==========================================================
 # TABLA: topics
 #
-# Representa los temas desarrollados dentro
-# de una sesión.
+# Temas desarrollados dentro de una sesión.
 #
-# Relación:
+# La IA utilizará esta información para relacionar:
 #
-# sessions 1 ----- N topics
+# estudiante + evaluación + tema
 #
-# Ejemplo:
-#
-# Sesión:
-# Derivadas
-#
-# Temas:
-# - Concepto de derivada
-# - Reglas de derivación
-#
-# Estos datos serán utilizados por la IA
-# para relacionar dificultades académicas
-# con temas específicos.
 # ==========================================================
 
 
-class Topic(db.Model):
+class Tema(db.Model):
 
     __tablename__ = "topics"
 
 
-    # Identificador del tema
     id = db.Column(
         db.Integer,
         primary_key=True
     )
 
 
-    # Sesión donde se enseñó el tema
-    session_id = db.Column(
+    sesion_id = db.Column(
         db.Integer,
         db.ForeignKey("sessions.id"),
         nullable=False
     )
 
 
-    # Nombre del tema
-    name = db.Column(
+    nombre = db.Column(
         db.String(150),
         nullable=False
     )
 
 
-    # Descripción del tema
-    description = db.Column(
+    descripcion = db.Column(
         db.Text
     )
 
@@ -580,81 +491,67 @@ class Topic(db.Model):
         default=datetime.utcnow
     )
 
+
+    sesion = db.relationship(
+        "Sesion",
+        backref="temas"
+    )
+
+
+
 # ==========================================================
 # TABLA: evaluations
 #
-# Registra las evaluaciones realizadas por el docente.
+# Registra evaluaciones.
 #
-# IMPORTANTE:
+# El examen puede ser físico.
 #
-# El examen es físico.
-# El sistema NO almacena preguntas ni respuestas.
-#
-# Solo registra:
-# - información de la evaluación
+# Solo almacenamos:
+# - datos del examen
 # - fecha
-# - evidencia del examen
-#
-# Relación:
-#
-# teacher_courses 1 ----- N evaluations
+# - evidencia
 #
 # ==========================================================
 
 
-class Evaluation(db.Model):
+class Evaluacion(db.Model):
 
     __tablename__ = "evaluations"
 
 
-    # Identificador de evaluación
     id = db.Column(
         db.Integer,
         primary_key=True
     )
 
 
-    # Curso y docente responsable
-    teacher_course_id = db.Column(
+    asignacion_docente_id = db.Column(
         db.Integer,
         db.ForeignKey("teacher_courses.id"),
         nullable=False
     )
 
 
-    # Nombre de evaluación
-    # Ejemplo:
-    # Examen Parcial 1
-    # Examen Final
-    name = db.Column(
+    nombre = db.Column(
         db.String(150),
         nullable=False
     )
 
 
-    # Tipo:
-    # parcial
-    # final
-    # práctica
-    # tarea
-    evaluation_type = db.Column(
+    tipo_evaluacion = db.Column(
         db.String(50),
         nullable=False
     )
 
 
-    # Fecha realizada
-    evaluation_date = db.Column(
+    fecha_evaluacion = db.Column(
         db.Date,
         nullable=False
     )
 
 
-    # Evidencia del examen físico
-    # Ruta de la imagen almacenada
-    evidence_url = db.Column(
-        db.String(255),
-        nullable=True
+    evidencia_url = db.Column(
+        db.String(255)
     )
 
 
@@ -663,23 +560,28 @@ class Evaluation(db.Model):
         default=datetime.utcnow
     )
 
+
+    asignacion_docente = db.relationship(
+        "AsignacionDocente",
+        backref="evaluaciones"
+    )
+
+
+
 # ==========================================================
 # TABLA: evaluation_topics
 #
-# Relación muchos a muchos entre:
+# Relación:
 #
-# evaluaciones
-#        |
-#        |
-# temas evaluados
+# Evaluación N ----- M Tema
 #
-# Permite saber qué temas fueron evaluados
-# en cada examen.
+# Permite saber qué temas
+# fueron evaluados.
 #
 # ==========================================================
 
 
-class EvaluationTopic(db.Model):
+class EvaluacionTema(db.Model):
 
     __tablename__ = "evaluation_topics"
 
@@ -690,36 +592,56 @@ class EvaluationTopic(db.Model):
     )
 
 
-    evaluation_id = db.Column(
+    evaluacion_id = db.Column(
         db.Integer,
         db.ForeignKey("evaluations.id"),
         nullable=False
     )
 
 
-    topic_id = db.Column(
+    tema_id = db.Column(
         db.Integer,
         db.ForeignKey("topics.id"),
         nullable=False
     )
 
+
+    evaluacion = db.relationship(
+        "Evaluacion",
+        backref="temas_evaluados"
+    )
+
+
+    tema = db.relationship(
+        "Tema",
+        backref="evaluaciones"
+    )
+
+
+    __table_args__ = (
+
+        db.UniqueConstraint(
+            "evaluacion_id",
+            "tema_id",
+            name="unique_evaluacion_tema"
+        ),
+
+    )
+
 # ==========================================================
 # TABLA: grades
 #
-# Guarda la nota obtenida por cada estudiante
-# en una evaluación.
+# Guarda las notas obtenidas por los estudiantes.
 #
-# Esta tabla será usada para:
-#
+# Utilizada para:
 # - promedio individual
-# - promedio del curso
-# - indicador docente-curso
-# - análisis IA
+# - promedio curso
+# - indicadores IA
 #
 # ==========================================================
 
 
-class Grade(db.Model):
+class Nota(db.Model):
 
     __tablename__ = "grades"
 
@@ -730,24 +652,21 @@ class Grade(db.Model):
     )
 
 
-    # Estudiante evaluado
-    student_id = db.Column(
+    estudiante_id = db.Column(
         db.Integer,
         db.ForeignKey("students.id"),
         nullable=False
     )
 
 
-    # Evaluación realizada
-    evaluation_id = db.Column(
+    evaluacion_id = db.Column(
         db.Integer,
         db.ForeignKey("evaluations.id"),
         nullable=False
     )
 
 
-    # Nota global del examen físico
-    grade = db.Column(
+    nota = db.Column(
         db.Numeric(5,2),
         nullable=False
     )
@@ -758,66 +677,60 @@ class Grade(db.Model):
         default=datetime.utcnow
     )
 
+
+    estudiante = db.relationship(
+        "Estudiante",
+        backref="notas"
+    )
+
+
+    evaluacion = db.relationship(
+        "Evaluacion",
+        backref="notas"
+    )
+
+
+
 # ==========================================================
 # TABLA: attendance
 #
-# Registra la asistencia de los estudiantes
-# durante una sesión de clase.
+# Registra asistencia por sesión.
 #
-# Relación:
-#
-# sessions 1 ----- N attendance
-#
-# students 1 ----- N attendance
-#
-# Esta información será usada por la IA
-# para calcular indicadores de asistencia.
 # ==========================================================
 
 
-class Attendance(db.Model):
+class Asistencia(db.Model):
 
     __tablename__ = "attendance"
 
 
-    # Identificador
     id = db.Column(
         db.Integer,
         primary_key=True
     )
 
 
-    # Sesión de clase
-    session_id = db.Column(
+    sesion_id = db.Column(
         db.Integer,
         db.ForeignKey("sessions.id"),
         nullable=False
     )
 
 
-    # Estudiante
-    student_id = db.Column(
+    estudiante_id = db.Column(
         db.Integer,
         db.ForeignKey("students.id"),
         nullable=False
     )
 
 
-    # Estado de asistencia
-    #
-    # PRESENTE
-    # FALTA
-    # TARDANZA
-    # JUSTIFICADO
-
-    status = db.Column(
+    estado = db.Column(
         db.String(20),
         nullable=False
     )
 
 
-    # Observación del docente
-    observation = db.Column(
+    observacion = db.Column(
         db.Text
     )
 
@@ -827,24 +740,34 @@ class Attendance(db.Model):
         default=datetime.utcnow
     )
 
+
+    sesion = db.relationship(
+        "Sesion",
+        backref="asistencias"
+    )
+
+
+    estudiante = db.relationship(
+        "Estudiante",
+        backref="asistencias"
+    )
+
+
+
 # ==========================================================
 # TABLA: incidents
 #
-# Registra situaciones que afectan
-# el rendimiento académico.
+# Registra problemas académicos.
 #
 # Ejemplos:
+# - bajo rendimiento
+# - dificultad temática
+# - inasistencia
 #
-# - Bajo rendimiento
-# - Inasistencia frecuente
-# - Dificultad en un tema
-#
-# Será utilizado por la IA para encontrar
-# causas del bajo rendimiento.
 # ==========================================================
 
 
-class Incident(db.Model):
+class Incidencia(db.Model):
 
     __tablename__ = "incidents"
 
@@ -855,52 +778,50 @@ class Incident(db.Model):
     )
 
 
-    # Estudiante involucrado
-    student_id = db.Column(
+    estudiante_id = db.Column(
         db.Integer,
         db.ForeignKey("students.id"),
         nullable=False
     )
 
 
-    # Curso donde ocurre
-    teacher_course_id = db.Column(
+    asignacion_docente_id = db.Column(
         db.Integer,
         db.ForeignKey("teacher_courses.id"),
         nullable=False
     )
 
 
-    # Tipo de incidencia
-    #
-    # Bajo rendimiento
-    # Inasistencia
-    # Dificultad temática
+    # NUEVO:
+    # Relación directa con el tema donde aparece
+    # la dificultad del estudiante.
 
-    type = db.Column(
+    tema_id = db.Column(
+        db.Integer,
+        db.ForeignKey("topics.id"),
+        nullable=True
+    )
+
+
+    tipo = db.Column(
         db.String(100),
         nullable=False
     )
 
 
-    # Detalle de la incidencia
-    description = db.Column(
+    descripcion = db.Column(
         db.Text,
         nullable=False
     )
 
 
-    # Baja
-    # Media
-    # Alta
-
-    severity = db.Column(
+    gravedad = db.Column(
         db.String(20),
         nullable=False
     )
 
 
-    incident_date = db.Column(
+    fecha_incidente = db.Column(
         db.Date,
         nullable=False
     )
@@ -909,4 +830,22 @@ class Incident(db.Model):
     created_at = db.Column(
         db.DateTime,
         default=datetime.utcnow
+    )
+
+
+    estudiante = db.relationship(
+        "Estudiante",
+        backref="incidencias"
+    )
+
+
+    asignacion_docente = db.relationship(
+        "AsignacionDocente",
+        backref="incidencias"
+    )
+
+
+    tema = db.relationship(
+        "Tema",
+        backref="incidencias"
     )
