@@ -7,7 +7,7 @@ import "./Login.css";
 function Login(){
 
 
-const [username,setUsername]=useState("");
+const [email,setEmail]=useState("");
 const [password,setPassword]=useState("");
 
 
@@ -22,7 +22,7 @@ try{
 
 const response = await login({
 
-username,
+email,
 password
 
 });
@@ -67,12 +67,12 @@ Sistema de Gestión Académica
 
 className="login-input"
 
-placeholder="Usuario"
+placeholder="email"
 
-value={username}
+value={email}
 
 onChange={
-e=>setUsername(e.target.value)
+e=>setEmail(e.target.value)
 }
 
 />
