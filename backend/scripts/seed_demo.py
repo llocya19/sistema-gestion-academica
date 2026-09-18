@@ -3,8 +3,10 @@ import os
 
 from datetime import date
 
+from werkzeug.security import generate_password_hash
 
-# Permite importar app desde scripts
+
+# permitir importar app
 sys.path.append(
     os.path.dirname(
         os.path.dirname(
@@ -15,29 +17,28 @@ sys.path.append(
 
 
 from app import create_app
-
 from app.extensions.database import db
 
 
 from app.modules.auth.models import (
-    User,
-    Role
+    Rol,
+    Usuario
 )
 
 
 from app.modules.academic.models import (
-    Person,
-    Student,
-    Teacher,
-    Course,
-    TeacherCourse,
-    Enrollment,
-    Session,
-    Topic,
-    Evaluation,
-    Grade,
-    Attendance,
-    Incident
+    Persona,
+    Estudiante,
+    Docente,
+    Curso,
+    AsignacionDocente,
+    Matricula,
+    Sesion,
+    Tema,
+    Evaluacion,
+    Nota,
+    Asistencia,
+    Incidencia
 )
 
 
@@ -49,268 +50,427 @@ app = create_app()
 with app.app_context():
 
 
-    print("Creando datos demo...")
+    print("================================")
+    print("CREANDO DATOS DEMO")
+    print("================================")
 
 
-    # ==========================
+    # ==================================================
     # ROLES
-    # ==========================
+    # ==================================================
+
+    nombres_roles = [
+
+        (
+            "ADMINISTRADOR",
+            "Administrador del sistema"
+        ),
+
+        (
+            "DIRECTORA",
+            "Dirección académica"
+        ),
+
+        (
+            "SECRETARIA",
+            "Gestión administrativa"
+        ),
+
+        (
+            "DOCENTE",
+            "Gestión académica docente"
+        )
+
+    ]
 
 
-    role_student = Role.query.filter_by(
-        name="ESTUDIANTE"
+    for nombre, descripcion in nombres_roles:
+
+
+        rol = Rol.query.filter_by(
+            name=nombre
+        ).first()
+
+
+        if not rol:
+
+            db.session.add(
+                Rol(
+                    name=nombre,
+                    description=descripcion
+                )
+            )
+
+
+    db.session.commit()
+
+
+
+    # ==================================================
+    # PERSONAS + USUARIOS
+    # ==================================================
+
+    usuarios_demo = [
+
+        (
+            "70000001",
+            "Carlos",
+            "Administrador",
+            "admin@test.com",
+            "ADMINISTRADOR"
+        ),
+
+        (
+            "70000002",
+            "Maria",
+            "Directora",
+            "directora@test.com",
+            "DIRECTORA"
+        ),
+
+        (
+            "70000003",
+            "Ana",
+            "Secretaria",
+            "secretaria@test.com",
+            "SECRETARIA"
+        ),
+
+        (
+            "70000004",
+            "Juan",
+            "Profesor",
+            "docente@test.com",
+            "DOCENTE"
+        )
+
+    ]
+
+
+
+    personas = {}
+
+
+
+    for dni, nombres, apellidos, email, rol_nombre in usuarios_demo:
+
+
+        usuario = Usuario.query.filter_by(
+            email=email
+        ).first()
+
+
+
+        if not usuario:
+
+
+            persona = Persona(
+
+                dni=dni,
+
+                nombres=nombres,
+
+                apellidos=apellidos
+
+            )
+
+
+            db.session.add(persona)
+
+            db.session.flush()
+
+
+
+            rol = Rol.query.filter_by(
+                name=rol_nombre
+            ).first()
+
+
+
+            usuario = Usuario(
+
+                persona_id=persona.id,
+
+                email=email,
+
+                password_hash=generate_password_hash(
+                    "123456"
+                ),
+
+                role_id=rol.id
+
+            )
+
+
+            db.session.add(usuario)
+
+
+
+            personas[email] = persona
+
+
+
+        else:
+
+            personas[email] = usuario.persona
+
+
+
+    db.session.commit()
+
+
+
+    # ==================================================
+    # ESTUDIANTES
+    # ==================================================
+
+    estudiantes_data = [
+
+        (
+            "80000001",
+            "Pedro",
+            "Perez",
+            "EST001"
+        ),
+
+        (
+            "80000002",
+            "Lucia",
+            "Gomez",
+            "EST002"
+        ),
+
+        (
+            "80000003",
+            "Jose",
+            "Lopez",
+            "EST003"
+        )
+
+    ]
+
+
+
+    estudiantes=[]
+
+
+    for dni,nombres,apellidos,codigo in estudiantes_data:
+
+
+        persona = Persona(
+
+            dni=dni,
+
+            nombres=nombres,
+
+            apellidos=apellidos
+
+        )
+
+
+        db.session.add(persona)
+
+        db.session.flush()
+
+
+
+        estudiante = Estudiante(
+
+            person_id=persona.id,
+
+            student_code=codigo
+
+        )
+
+
+        db.session.add(estudiante)
+
+        estudiantes.append(estudiante)
+
+
+
+    db.session.commit()
+
+
+
+    # ==================================================
+    # DOCENTE
+    # ==================================================
+
+    persona_docente = personas[
+        "docente@test.com"
+    ]
+
+
+    docente = Docente.query.filter_by(
+        person_id=persona_docente.id
     ).first()
 
 
-    if not role_student:
 
-        role_student = Role(
-            name="ESTUDIANTE",
-            description="Usuario estudiante"
+    if not docente:
+
+        docente = Docente(
+
+            person_id=persona_docente.id,
+
+            teacher_code="DOC001"
+
         )
 
-        db.session.add(role_student)
+
+        db.session.add(docente)
+
+        db.session.commit()
 
 
 
-    role_teacher = Role.query.filter_by(
-        name="DOCENTE"
-    ).first()
+    # ==================================================
+    # CURSOS
+    # ==================================================
+
+    cursos=[]
 
 
-    if not role_teacher:
+    cursos_data=[
 
-        role_teacher = Role(
-            name="DOCENTE",
-            description="Usuario docente"
+        (
+            "MAT101",
+            "Matemática"
+        ),
+
+        (
+            "PRO101",
+            "Programación"
+        ),
+
+        (
+            "BD101",
+            "Base de Datos"
         )
 
-        db.session.add(role_teacher)
-
-
-    db.session.commit()
+    ]
 
 
 
-    # ==========================
-    # USUARIOS
-    # ==========================
+    for codigo,nombre in cursos_data:
 
 
-    user_student = User.query.filter_by(
-        email="alumno@test.com"
-    ).first()
+        curso = Curso(
 
+            code=codigo,
 
-    if not user_student:
+            name=nombre,
 
-        user_student = User(
-            first_name="Carlos",
-            last_name="Alumno",
-            email="alumno@test.com",
-            password_hash="123456",
-            role_id=role_student.id
+            description="Curso académico"
+
         )
 
-        db.session.add(user_student)
+
+        db.session.add(curso)
+
+        cursos.append(curso)
 
 
 
-    user_teacher = User.query.filter_by(
-        email="docente@test.com"
-    ).first()
+    db.session.commit()
 
 
-    if not user_teacher:
 
-        user_teacher = User(
-            first_name="Juan",
-            last_name="Profesor",
-            email="docente@test.com",
-            password_hash="123456",
-            role_id=role_teacher.id
+    # ==================================================
+    # ASIGNACION DOCENTE
+    # ==================================================
+
+    asignacion = AsignacionDocente(
+
+        teacher_id=docente.id,
+
+        course_id=cursos[0].id
+
+    )
+
+
+    db.session.add(asignacion)
+
+    db.session.commit()
+
+
+
+    # ==================================================
+    # MATRICULAS
+    # ==================================================
+
+    for estudiante in estudiantes:
+
+
+        db.session.add(
+
+            Matricula(
+
+                student_id=estudiante.id,
+
+                course_id=cursos[0].id,
+
+                academic_period="2026-I"
+
+            )
+
         )
 
-        db.session.add(user_teacher)
-
 
     db.session.commit()
 
 
 
-    # ==========================
-    # PERSONAS
-    # ==========================
-
-
-    person_student = Person(
-
-        user_id=user_student.id,
-
-        dni="12345678",
-
-        first_name="Carlos",
-
-        last_name="Alumno"
-
-    )
-
-
-    person_teacher = Person(
-
-        user_id=user_teacher.id,
-
-        dni="87654321",
-
-        first_name="Juan",
-
-        last_name="Profesor"
-
-    )
-
-
-    db.session.add_all(
-        [
-            person_student,
-            person_teacher
-        ]
-    )
-
-
-    db.session.commit()
-
-
-
-    # ==========================
-    # ESTUDIANTE Y DOCENTE
-    # ==========================
-
-
-    student = Student(
-
-        person_id=person_student.id,
-
-        student_code="EST001"
-
-    )
-
-
-    teacher = Teacher(
-
-        person_id=person_teacher.id,
-        teacher_code="DOC001"
-
-    )
-
-
-    db.session.add_all(
-        [
-            student,
-            teacher
-        ]
-    )
-
-
-    db.session.commit()
-
-
-
-    # ==========================
-    # CURSO
-    # ==========================
-
-
-    course = Course(
-
-        code="MAT101",
-
-        name="Matemática",
-
-        description="Curso básico"
-
-    )
-
-
-    db.session.add(course)
-
-    db.session.commit()
-
-
-
-    # ==========================
-    # DOCENTE CURSO
-    # ==========================
-
-
-    teacher_course = TeacherCourse(
-
-        teacher_id=teacher.id,
-
-        course_id=course.id
-
-    )
-
-
-    db.session.add(teacher_course)
-
-    db.session.commit()
-
-
-
-    # ==========================
-    # MATRICULA
-    # ==========================
-
-
-    enrollment = Enrollment(
-
-        student_id=student.id,
-
-        course_id=course.id,
-
-        academic_period="2026-I"
-
-    )
-
-
-    db.session.add(enrollment)
-
-    db.session.commit()
-
-
-
-    # ==========================
+    # ==================================================
     # SESION
-    # ==========================
+    # ==================================================
 
+    sesion = Sesion(
 
-    session = Session(
+        teacher_course_id=asignacion.id,
 
-        teacher_course_id=teacher_course.id,
+        title="Introducción al curso",
 
-        title="Clase inicial",
-
-        description="Introducción",
+        description="Primera sesión",
 
         session_date=date.today()
 
     )
 
 
-    db.session.add(session)
+    db.session.add(sesion)
 
     db.session.commit()
 
 
 
-    # ==========================
+    # ==================================================
+    # TEMA
+    # ==================================================
+
+    tema = Tema(
+
+        session_id=sesion.id,
+
+        name="Tema inicial",
+
+        description="Conceptos básicos"
+
+    )
+
+
+    db.session.add(tema)
+
+
+
+    # ==================================================
     # EVALUACION
-    # ==========================
+    # ==================================================
 
+    evaluacion = Evaluacion(
 
-    evaluation = Evaluation(
-
-        teacher_course_id=teacher_course.id,
+        teacher_course_id=asignacion.id,
 
         name="Examen parcial",
 
@@ -321,94 +481,91 @@ with app.app_context():
     )
 
 
-    db.session.add(evaluation)
+    db.session.add(evaluacion)
 
     db.session.commit()
 
 
 
-    # ==========================
+    # ==================================================
     # NOTAS
-    # ==========================
+    # ==================================================
+
+    notas=[15,12,18]
 
 
-    db.session.add_all(
+    for estudiante,valor in zip(
+        estudiantes,
+        notas
+    ):
 
-        [
 
-            Grade(
+        db.session.add(
 
-                student_id=student.id,
+            Nota(
 
-                evaluation_id=evaluation.id,
+                estudiante_id=estudiante.id,
 
-                grade=15
+                evaluacion_id=evaluacion.id,
 
-            ),
-
-            Grade(
-
-                student_id=student.id,
-
-                evaluation_id=evaluation.id,
-
-                grade=13
+                nota=valor
 
             )
 
-        ]
-
-    )
+        )
 
 
     db.session.commit()
 
 
 
-    # ==========================
+    # ==================================================
     # ASISTENCIA
-    # ==========================
+    # ==================================================
+
+    for estudiante in estudiantes:
 
 
-    db.session.add(
+        db.session.add(
 
-        Attendance(
+            Asistencia(
 
-            session_id=session.id,
+                sesion_id=sesion.id,
 
-            student_id=student.id,
+                estudiante_id=estudiante.id,
 
-            status="PRESENTE"
+                estado="PRESENTE"
+
+            )
 
         )
 
-    )
-
 
     db.session.commit()
 
 
 
-    # ==========================
+    # ==================================================
     # INCIDENCIA
-    # ==========================
-
+    # ==================================================
 
     db.session.add(
 
-        Incident(
+        Incidencia(
 
-            student_id=student.id,
+            estudiante_id=estudiantes[1].id,
 
-            teacher_course_id=teacher_course.id,
+            asignacion_docente_id=asignacion.id,
 
-            type="BAJO RENDIMIENTO",
+            tipo="BAJO RENDIMIENTO",
 
-            description="Necesita reforzamiento",
+            descripcion="Necesita reforzamiento",
 
-            severity="MEDIA",
+            gravedad="MEDIA",
 
-            incident_date=date.today()
+            fecha_incidente=date.today(),
+
+            tema_id=tema.id
 
         )
 
@@ -421,6 +578,4 @@ with app.app_context():
 
     print("==============================")
     print("DATOS DEMO CREADOS")
-    print("Estudiante:", student.id)
-    print("Curso:", course.id)
     print("==============================")
