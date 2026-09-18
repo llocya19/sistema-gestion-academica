@@ -2,7 +2,7 @@ import api from "../api/axiosConfig";
 
 
 interface LoginData {
-    username:string;
+    email:string;
     password:string;
 }
 
