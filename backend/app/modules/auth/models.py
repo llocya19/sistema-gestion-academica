@@ -6,17 +6,7 @@ from app.extensions.database import db
 
 # ==========================================================
 # TABLA: roles
-#
-# Define los tipos de usuario del sistema
-#
-# Ejemplo:
-# ADMINISTRADOR
-# DIRECTORA
-# DOCENTE
-# ESTUDIANTE
-#
 # ==========================================================
-
 
 class Rol(db.Model):
 
@@ -49,12 +39,8 @@ class Rol(db.Model):
 
 
 # ==========================================================
-# TABLA: permisos
-#
-# Permisos del sistema
-#
+# TABLA: permissions
 # ==========================================================
-
 
 class Permiso(db.Model):
 
@@ -81,12 +67,8 @@ class Permiso(db.Model):
 
 
 # ==========================================================
-# TABLA: rol_permisos
-#
-# Relación N:M entre roles y permisos
-#
+# TABLA: role_permissions
 # ==========================================================
-
 
 class RolPermiso(db.Model):
 
@@ -115,26 +97,25 @@ class RolPermiso(db.Model):
 
     rol = db.relationship(
         "Rol",
-        backref="permisos_asignados"
+        backref="permisos"
     )
 
 
     permiso = db.relationship(
         "Permiso",
-        backref="roles_asignados"
+        backref="roles"
     )
 
 
 
 # ==========================================================
-# TABLA: usuarios
+# TABLA: users
 #
-# Maneja únicamente autenticación.
+# Solo autenticación
 #
-# Los datos personales están en PERSONAS.
+# Los datos personales están en Persona
 #
 # ==========================================================
-
 
 class Usuario(db.Model):
 
@@ -144,6 +125,13 @@ class Usuario(db.Model):
     id = db.Column(
         db.Integer,
         primary_key=True
+    )
+
+
+    persona_id = db.Column(
+        db.Integer,
+        db.ForeignKey("persons.id"),
+        nullable=False
     )
 
 
@@ -187,6 +175,13 @@ class Usuario(db.Model):
     updated_at = db.Column(
         db.DateTime,
         onupdate=datetime.utcnow
+    )
+
+
+    persona = db.relationship(
+    "Persona",
+        back_populates="usuario",
+        uselist=False
     )
 
 
