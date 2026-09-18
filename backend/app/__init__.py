@@ -12,6 +12,7 @@ from app.extensions.migrate import migrate
 from app.modules.auth import models as auth_models
 from app.modules.academic import models as academic_models
 from app.modules.analytics import models as analytics_models
+from app.modules.admin.routes import admin_bp
 
 
 # Importar rutas
@@ -41,7 +42,7 @@ def create_app():
     # Registrar rutas
 
     app.register_blueprint(auth_bp)
-
+    app.register_blueprint(admin_bp)
 
 
     @app.route("/") 
