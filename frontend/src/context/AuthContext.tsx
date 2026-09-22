@@ -32,27 +32,54 @@ const AuthContext = createContext<AuthContextType | undefined>(
 
 export function AuthProvider({ children }: { children: ReactNode }) {
 
-  const [usuario, setUsuario] = useState<Usuario | null>(null);
-  const [token, setToken] = useState<string | null>(null);
+    const [usuario, setUsuario] = useState<Usuario | null>(() => {
+
+        const usuarioGuardado = sessionStorage.getItem("usuario");
+
+        return usuarioGuardado
+        ? JSON.parse(usuarioGuardado)
+        : null;
+
+    });
 
 
-  const iniciarSesion = (
-    nuevoToken: string,
-    nuevoUsuario: Usuario
-  ) => {
+    const [token, setToken] = useState<string | null>(() => {
 
-    setToken(nuevoToken);
-    setUsuario(nuevoUsuario);
+        return sessionStorage.getItem("token");
 
-  };
+    });
 
 
-  const cerrarSesion = () => {
+    const iniciarSesion = (
+        nuevoToken: string,
+        nuevoUsuario: Usuario
+    ) => {
 
-    setToken(null);
-    setUsuario(null);
+        setToken(nuevoToken);
+        setUsuario(nuevoUsuario);
 
-  };
+        sessionStorage.setItem(
+            "token",
+            nuevoToken
+        );
+
+        sessionStorage.setItem(
+            "usuario",
+            JSON.stringify(nuevoUsuario)
+        );
+
+    };
+
+
+    const cerrarSesion = () => {
+
+        setToken(null);
+        setUsuario(null);
+
+        sessionStorage.removeItem("token");
+        sessionStorage.removeItem("usuario");
+
+    };
 
 
   return (
