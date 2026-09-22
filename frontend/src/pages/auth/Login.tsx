@@ -3,12 +3,18 @@ import {login} from "../../services/authService";
 
 import "./Login.css";
 
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
+
 
 function Login(){
 
+const { iniciarSesion } = useAuth();
+const navigate = useNavigate();
 
 const [email,setEmail]=useState("");
 const [password,setPassword]=useState("");
+
 
 
 
@@ -28,7 +34,11 @@ password
 });
 
 
-console.log(response);
+iniciarSesion(
+  response.access_token,
+  response.usuario
+);
+navigate("/home");
 
 
 }catch(error){
