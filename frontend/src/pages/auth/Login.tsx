@@ -38,7 +38,9 @@ iniciarSesion(
   response.access_token,
   response.usuario
 );
+
 navigate("/home");
+
 
 
 }catch(error){
