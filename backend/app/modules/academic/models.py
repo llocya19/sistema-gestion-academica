@@ -976,7 +976,6 @@ class MatriculaEstudiante(db.Model):
 # TABLA: course_assignments
 # Nueva asignación docente según DER
 # ==========================================================
-
 class AsignacionCurso(db.Model):
 
     __tablename__ = "course_assignments"
@@ -990,36 +989,28 @@ class AsignacionCurso(db.Model):
 
     teacher_id = db.Column(
         db.Integer,
-        db.ForeignKey(
-            "teachers.id"
-        ),
+        db.ForeignKey("teachers.id"),
         nullable=False
     )
 
 
     course_id = db.Column(
         db.Integer,
-        db.ForeignKey(
-            "courses.id"
-        ),
+        db.ForeignKey("courses.id"),
         nullable=False
     )
 
 
     academic_period_id = db.Column(
         db.Integer,
-        db.ForeignKey(
-            "academic_periods.id"
-        ),
+        db.ForeignKey("academic_periods.id"),
         nullable=False
     )
 
 
     section_id = db.Column(
         db.Integer,
-        db.ForeignKey(
-            "sections.id"
-        ),
+        db.ForeignKey("sections.id"),
         nullable=False
     )
 
@@ -1029,3 +1020,22 @@ class AsignacionCurso(db.Model):
         default=datetime.utcnow
     )
 
+
+    docente = db.relationship(
+        "Docente"
+    )
+
+
+    curso = db.relationship(
+        "Curso"
+    )
+
+
+    periodo = db.relationship(
+        "PeriodoAcademico"
+    )
+
+
+    seccion = db.relationship(
+        "Seccion"
+    )
