@@ -1,10 +1,11 @@
-import {useState} from "react";
-import {login} from "../../services/authService";
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+
+import { login } from "../../services/authService";
+import { useAuth } from "../../context/AuthContext";
+import logoGwc from "../../assets/logo-gwc.png";
 
 import "./Login.css";
-
-import { useNavigate } from "react-router-dom";
-import { useAuth } from "../../context/AuthContext";
 
 
 function Login(){
@@ -60,144 +61,250 @@ const handleSubmit = async (e: React.FormEvent) => {
 
 
 return (
-  <div className="login-container">
+  <main className="login-page">
 
-    <div className="login-wrapper">
+    <div className="login-layout">
 
-      <section className="login-welcome">
-        <div className="welcome-content">
+      {/* PANEL IZQUIERDO */}
+      <section className="login-brand-panel">
 
-          <div className="school-icon">
-            🎓
+        <div className="brand-content">
+
+          <div className="brand-logo-container">
+            <img
+              src={logoGwc}
+              alt="Logo de la I.E.P. George Washington Carver"
+              className="brand-logo"
+            />
           </div>
 
-          <h1>
-            Sistema de Gestión Académica
-          </h1>
+          <div className="brand-school">
+            <span>I.E.P.</span>
+            <strong>George Washington Carver</strong>
+            <small>Chincha</small>
+          </div>
 
-          <p>
-            Una plataforma para organizar y consultar
-            la información académica de manera sencilla
-            y eficiente.
-          </p>
+          <div className="brand-title">
+            <h1>
+              Sistema de
+              <span> Gestión Académica</span>
+            </h1>
 
-          <div className="school-name">
-            I.E.P. George Washington Carver
+            <p>
+              Información académica organizada,
+              accesible y eficiente.
+            </p>
+          </div>
+
+          <div className="brand-divider"></div>
+
+          <div className="brand-features">
+
+            <div className="brand-feature">
+              <div className="feature-icon">✓</div>
+
+              <div>
+                <strong>Procesos organizados</strong>
+                <p>
+                  Información académica centralizada
+                  en un solo lugar.
+                </p>
+              </div>
+            </div>
+
+            <div className="brand-feature">
+              <div className="feature-icon">✓</div>
+
+              <div>
+                <strong>Acceso rápido</strong>
+                <p>
+                  Consulta la información necesaria
+                  de manera sencilla.
+                </p>
+              </div>
+            </div>
+
+            <div className="brand-feature">
+              <div className="feature-icon">✓</div>
+
+              <div>
+                <strong>Gestión académica</strong>
+                <p>
+                  Herramientas para apoyar las
+                  actividades del personal educativo.
+                </p>
+              </div>
+            </div>
+
           </div>
 
         </div>
+
+        <div className="brand-decoration decoration-one"></div>
+        <div className="brand-decoration decoration-two"></div>
+
       </section>
 
 
+      {/* PANEL DERECHO */}
       <section className="login-form-section">
 
         <div className="login-card">
 
-          <div className="login-header">
+          <header className="login-header">
+
             <span className="login-subtitle">
-              Bienvenido
+              SISTEMA ACADÉMICO
             </span>
 
-            <h2>Iniciar sesión</h2>
+            <h2>¡Bienvenido!</h2>
 
             <p>
               Ingresa tus credenciales para acceder
               al sistema.
             </p>
-          </div>
+
+          </header>
 
 
           <form onSubmit={handleSubmit}>
 
+            {/* CORREO */}
             <div className="form-group">
 
               <label htmlFor="email">
                 Correo electrónico
               </label>
 
-              <input
-                id="email"
-                className="login-input"
-                type="email"
-                placeholder="ejemplo@correo.com"
-                value={email}
-                onChange={(e) =>
-                  setEmail(e.target.value)
-                }
-                required
-              />
+              <div className="input-container">
+
+                <span className="input-icon">
+                  ✉
+                </span>
+
+                <input
+                  id="email"
+                  className="login-input"
+                  type="email"
+                  placeholder="Ingresa tu correo electrónico"
+                  value={email}
+                  onChange={(e) =>
+                    setEmail(e.target.value)
+                  }
+                  autoComplete="email"
+                  required
+                />
+
+              </div>
 
             </div>
 
 
+            {/* CONTRASEÑA */}
             <div className="form-group">
 
-                <label htmlFor="password">
-                    Contraseña
-                </label>
+              <label htmlFor="password">
+                Contraseña
+              </label>
 
-                <div className="password-container">
+              <div className="input-container password-container">
 
-                    <input
-                    id="password"
-                    className="login-input password-input"
-                    type={mostrarPassword ? "text" : "password"}
-                    placeholder="Ingresa tu contraseña"
-                    value={password}
-                    onChange={(e) =>
-                        setPassword(e.target.value)
-                    }
-                    required
-                    />
+                <span className="input-icon">
+                  🔒
+                </span>
 
-                    <button
-                    type="button"
-                    className="password-toggle"
-                    onClick={() =>
-                        setMostrarPassword(!mostrarPassword)
-                    }
-                    aria-label={
-                        mostrarPassword
-                        ? "Ocultar contraseña"
-                        : "Mostrar contraseña"
-                    }
-                    >
-                    {mostrarPassword ? "Ocultar" : "Ver"}
-                    </button>
+                <input
+                  id="password"
+                  className="login-input password-input"
+                  type={
+                    mostrarPassword
+                      ? "text"
+                      : "password"
+                  }
+                  placeholder="Ingresa tu contraseña"
+                  value={password}
+                  onChange={(e) =>
+                    setPassword(e.target.value)
+                  }
+                  autoComplete="current-password"
+                  required
+                />
 
-                </div>
+                <button
+                  type="button"
+                  className="password-toggle"
+                  onClick={() =>
+                    setMostrarPassword(
+                      !mostrarPassword
+                    )
+                  }
+                  aria-label={
+                    mostrarPassword
+                      ? "Ocultar contraseña"
+                      : "Mostrar contraseña"
+                  }
+                >
+                  {mostrarPassword
+                    ? "Ocultar"
+                    : "Ver"}
+                </button>
+
+              </div>
 
             </div>
 
+
+            {/* MENSAJE DE ERROR */}
             {error && (
-                <div className="login-error">
-                    {error}
-                </div>
+              <div
+                className="login-error"
+                role="alert"
+              >
+                {error}
+              </div>
             )}
 
 
+            {/* BOTÓN */}
             <button
-                className="login-button"
-                type="submit"
-                disabled={cargando}
+              className="login-button"
+              type="submit"
+              disabled={cargando}
             >
-                {cargando ? "Ingresando..." : "Ingresar"}
+              {cargando
+                ? "Ingresando..."
+                : "Iniciar sesión"}
             </button>
 
           </form>
 
 
-          <p className="login-footer">
-            Acceso exclusivo para personal autorizado
-          </p>
+          <div className="login-help">
+            <span>¿Necesitas ayuda?</span>
+            <p>
+              Comunícate con el administrador
+              del sistema.
+            </p>
+          </div>
 
         </div>
+
+
+        <footer className="page-footer">
+          <strong>
+            I.E.P. George Washington Carver
+          </strong>
+
+          <span>
+            Sistema de Gestión Académica
+          </span>
+        </footer>
 
       </section>
 
     </div>
 
-  </div>
+  </main>
 );
 
 
