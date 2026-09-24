@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { obtenerUsuarios } from "../../../services/adminService";
 
 type Usuario = {
@@ -28,6 +29,10 @@ function UsuariosPage() {
   return (
     <main>
       <h1>Gestión de usuarios</h1>
+      
+      <Link to="/admin/usuarios/nuevo">
+        Nuevo usuario
+      </Link>
 
       <table>
         <thead>

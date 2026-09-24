@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import { render, screen, waitFor } from "@testing-library/react";
+import { MemoryRouter } from "react-router-dom";
 import UsuariosPage from "./UsuariosPage";
 import { obtenerUsuarios } from "../../../services/adminService";
 
@@ -7,7 +8,8 @@ vi.mock("../../../services/adminService", () => ({
   obtenerUsuarios: vi.fn(),
 }));
 
-describe("UsuariosPage - HU02 CA07", () => {
+describe("UsuariosPage - HU02", () => {
+
   it("carga y muestra el estado actual de las cuentas", async () => {
     const usuarios = [
       {
@@ -36,20 +38,67 @@ describe("UsuariosPage - HU02 CA07", () => {
 
     vi.mocked(obtenerUsuarios).mockResolvedValue(usuarios);
 
-    render(<UsuariosPage />);
+    render(
+      <MemoryRouter>
+        <UsuariosPage />
+      </MemoryRouter>
+    );
 
     await waitFor(() => {
       expect(obtenerUsuarios).toHaveBeenCalledTimes(1);
     });
 
-    expect(screen.getByText("María Directora")).toBeInTheDocument();
-    expect(screen.getByText("directora@test.com")).toBeInTheDocument();
-    expect(screen.getByText("DIRECTORA")).toBeInTheDocument();
-    expect(screen.getByText("Activo")).toBeInTheDocument();
+    expect(
+      screen.getByText("María Directora")
+    ).toBeInTheDocument();
 
-    expect(screen.getByText("Juan Profesor")).toBeInTheDocument();
-    expect(screen.getByText("docente@test.com")).toBeInTheDocument();
-    expect(screen.getByText("DOCENTE")).toBeInTheDocument();
-    expect(screen.getByText("Inactivo")).toBeInTheDocument();
+    expect(
+      screen.getByText("directora@test.com")
+    ).toBeInTheDocument();
+
+    expect(
+      screen.getByText("DIRECTORA")
+    ).toBeInTheDocument();
+
+    expect(
+      screen.getByText("Activo")
+    ).toBeInTheDocument();
+
+    expect(
+      screen.getByText("Juan Profesor")
+    ).toBeInTheDocument();
+
+    expect(
+      screen.getByText("docente@test.com")
+    ).toBeInTheDocument();
+
+    expect(
+      screen.getByText("DOCENTE")
+    ).toBeInTheDocument();
+
+    expect(
+      screen.getByText("Inactivo")
+    ).toBeInTheDocument();
   });
+
+
+  it("muestra un acceso para crear un nuevo usuario", async () => {
+    vi.mocked(obtenerUsuarios).mockResolvedValue([]);
+
+    render(
+      <MemoryRouter>
+        <UsuariosPage />
+      </MemoryRouter>
+    );
+
+    expect(
+      await screen.findByRole("link", {
+        name: /nuevo usuario/i,
+      })
+    ).toHaveAttribute(
+      "href",
+      "/admin/usuarios/nuevo"
+    );
+  });
+
 });

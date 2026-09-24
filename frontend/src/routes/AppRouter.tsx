@@ -10,6 +10,7 @@ import ProtectedRoute from "./ProtectedRoute";
 import { AuthProvider } from "../context/AuthContext";
 import AdminDashboard from "../pages/admin/AdminDashboard";
 import UsuariosPage from "../pages/admin/usuarios/UsuariosPage";
+import NuevoUsuarioPage from "../pages/admin/usuarios/NuevoUsuarioPage";
 
 
 function AppRouter() {
@@ -50,6 +51,15 @@ function AppRouter() {
             element={
               <ProtectedRoute>
                 <UsuariosPage />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/admin/usuarios/nuevo"
+            element={
+              <ProtectedRoute>
+                <NuevoUsuarioPage />
               </ProtectedRoute>
             }
           />
