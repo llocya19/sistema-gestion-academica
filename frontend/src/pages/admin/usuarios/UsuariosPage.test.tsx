@@ -1,9 +1,14 @@
-import { describe, expect, it } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { describe, expect, it, vi } from "vitest";
+import { render, screen, waitFor } from "@testing-library/react";
 import UsuariosPage from "./UsuariosPage";
+import { obtenerUsuarios } from "../../../services/adminService";
+
+vi.mock("../../../services/adminService", () => ({
+  obtenerUsuarios: vi.fn(),
+}));
 
 describe("UsuariosPage - HU02 CA07", () => {
-  it("muestra el estado actual de las cuentas", () => {
+  it("carga y muestra el estado actual de las cuentas", async () => {
     const usuarios = [
       {
         id: 1,
@@ -29,14 +34,22 @@ describe("UsuariosPage - HU02 CA07", () => {
       },
     ];
 
-    render(<UsuariosPage usuarios={usuarios} />);
+    vi.mocked(obtenerUsuarios).mockResolvedValue(usuarios);
+
+    render(<UsuariosPage />);
+
+    await waitFor(() => {
+      expect(obtenerUsuarios).toHaveBeenCalledTimes(1);
+    });
 
     expect(screen.getByText("María Directora")).toBeInTheDocument();
     expect(screen.getByText("directora@test.com")).toBeInTheDocument();
+    expect(screen.getByText("DIRECTORA")).toBeInTheDocument();
     expect(screen.getByText("Activo")).toBeInTheDocument();
 
     expect(screen.getByText("Juan Profesor")).toBeInTheDocument();
     expect(screen.getByText("docente@test.com")).toBeInTheDocument();
+    expect(screen.getByText("DOCENTE")).toBeInTheDocument();
     expect(screen.getByText("Inactivo")).toBeInTheDocument();
   });
 });

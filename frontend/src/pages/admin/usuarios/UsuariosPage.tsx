@@ -1,3 +1,6 @@
+import { useEffect, useState } from "react";
+import { obtenerUsuarios } from "../../../services/adminService";
+
 type Usuario = {
   id: number;
   email: string;
@@ -10,11 +13,18 @@ type Usuario = {
   };
 };
 
-type UsuariosPageProps = {
-  usuarios: Usuario[];
-};
+function UsuariosPage() {
+  const [usuarios, setUsuarios] = useState<Usuario[]>([]);
 
-function UsuariosPage({ usuarios }: UsuariosPageProps) {
+  useEffect(() => {
+    async function cargarUsuarios() {
+      const datos = await obtenerUsuarios();
+      setUsuarios(datos);
+    }
+
+    cargarUsuarios();
+  }, []);
+
   return (
     <main>
       <h1>Gestión de usuarios</h1>
