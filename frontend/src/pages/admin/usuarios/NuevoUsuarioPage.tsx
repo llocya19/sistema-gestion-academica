@@ -36,16 +36,31 @@ function NuevoUsuarioPage() {
     const formulario = evento.currentTarget;
     const datos = new FormData(formulario);
 
-    const respuesta = await crearUsuario({
+    try {
+      const respuesta = await crearUsuario({
         dni: String(datos.get("dni")),
         nombres: String(datos.get("nombres")),
         apellidos: String(datos.get("apellidos")),
         email: String(datos.get("email")),
         password: String(datos.get("password")),
         role_id: Number(datos.get("rol")),
-    });
+      });
 
-    setMensaje(respuesta.mensaje);
+      setMensaje(respuesta.mensaje);
+    } catch (error: unknown) {
+      const errorApi = error as {
+        response?: {
+          data?: {
+            mensaje?: string;
+          };
+        };
+      };
+
+      setMensaje(
+        errorApi.response?.data?.mensaje ??
+          "No se pudo crear el usuario"
+      );
+    }
   }
 
   return (
