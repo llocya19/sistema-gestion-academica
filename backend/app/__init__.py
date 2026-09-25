@@ -13,10 +13,11 @@ from app.modules.auth import models as auth_models
 from app.modules.academic import models as academic_models
 from app.modules.analytics import models as analytics_models
 from app.modules.admin.routes import admin_bp
-
+from app.modules.secretary.routes import secretary_bp
 
 # Importar rutas
 from app.modules.auth.routes import auth_bp
+from app.modules.academic.routes import academic_bp
 
 
 
@@ -43,7 +44,8 @@ def create_app():
 
     app.register_blueprint(auth_bp)
     app.register_blueprint(admin_bp)
-
+    app.register_blueprint(secretary_bp)
+    app.register_blueprint(academic_bp)
 
     @app.route("/") 
     def home(): 
