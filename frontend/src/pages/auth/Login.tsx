@@ -5,6 +5,7 @@ import "./Login.css";
 
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
+import axios from "axios";
 
 
 function Login(){
@@ -50,9 +51,18 @@ const handleSubmit = async (e: React.FormEvent) => {
 
     console.error(error);
 
-    setError(
-      "Correo electrónico o contraseña incorrectos."
-    );
+    if (
+      axios.isAxiosError(error) &&
+      error.response?.data?.mensaje === "Usuario desactivado"
+    ) {
+      setError(
+        "Tu cuenta se encuentra desactivada. Contacta con el administrador."
+      );
+    } else {
+      setError(
+        "Correo electrónico o contraseña incorrectos."
+      );
+    }
 
   } finally {
 
