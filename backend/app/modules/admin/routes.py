@@ -2,9 +2,7 @@ from flask import Blueprint, jsonify, request
 
 from flask_jwt_extended import jwt_required
 
-
 from app.utils.decorators import requiere_rol
-
 
 from app.modules.admin.services import (
     listar_usuarios,
@@ -16,8 +14,6 @@ from app.modules.admin.services import (
     asignar_permisos_rol,
     obtener_permisos_rol
 )
-
-
 
 
 admin_bp = Blueprint(
@@ -40,14 +36,12 @@ admin_bp = Blueprint(
 @requiere_rol("ADMINISTRADOR")
 def admin_test():
 
-
     return jsonify({
 
         "mensaje":
         "Modulo administrador funcionando"
 
     })
-
 
 
 
@@ -63,17 +57,13 @@ def admin_test():
 @requiere_rol("ADMINISTRADOR")
 def users():
 
-
     usuarios = listar_usuarios()
-
 
     return jsonify({
 
         "usuarios": usuarios
 
     })
-
-
 
 
 
@@ -89,11 +79,20 @@ def users():
 @requiere_rol("ADMINISTRADOR")
 def create_user():
 
-
     try:
 
-
         data = request.get_json()
+
+
+        if not data:
+
+            return jsonify({
+
+                "mensaje":
+                "Debe enviar datos"
+
+            }),400
+
 
 
         usuario = crear_usuario(data)
@@ -107,7 +106,6 @@ def create_user():
 
 
             "usuario": {
-
 
                 "id":
                 usuario.id,
@@ -148,11 +146,10 @@ def create_user():
 
                 }
 
-
             }
 
 
-        }), 201
+        }),201
 
 
 
@@ -165,6 +162,8 @@ def create_user():
             str(error)
 
         }),400
+
+
 
 # ==========================================================
 # ACTUALIZAR USUARIO
@@ -184,6 +183,17 @@ def update_user(id):
         data = request.get_json()
 
 
+        if not data:
+
+            return jsonify({
+
+                "mensaje":
+                "Debe enviar datos"
+
+            }),400
+
+
+
         usuario = actualizar_usuario(
             id,
             data
@@ -195,24 +205,34 @@ def update_user(id):
             "mensaje":
             "Usuario actualizado correctamente",
 
+
             "usuario":{
 
-                "id":usuario.id,
+                "id":
+                usuario.id,
 
-                "email":usuario.email,
+
+                "email":
+                usuario.email,
+
 
                 "rol":{
 
-                    "id":usuario.rol.id,
+                    "id":
+                    usuario.rol.id,
 
-                    "nombre":usuario.rol.name
+
+                    "nombre":
+                    usuario.rol.name
 
                 },
+
 
                 "persona":{
 
                     "nombres":
                     usuario.persona.nombres,
+
 
                     "apellidos":
                     usuario.persona.apellidos
@@ -221,7 +241,9 @@ def update_user(id):
 
             }
 
+
         })
+
 
 
     except ValueError as error:
@@ -229,9 +251,12 @@ def update_user(id):
 
         return jsonify({
 
-            "mensaje":str(error)
+            "mensaje":
+            str(error)
 
         }),400
+
+
 
 # ==========================================================
 # CAMBIAR ESTADO USUARIO
@@ -251,9 +276,23 @@ def update_status(id):
         data = request.get_json()
 
 
+        if not data or "status" not in data:
+
+            return jsonify({
+
+                "mensaje":
+                "Debe enviar el estado"
+
+            }),400
+
+
+
         usuario = cambiar_estado_usuario(
+
             id,
+
             data["status"]
+
         )
 
 
@@ -278,8 +317,8 @@ def update_status(id):
 
             }
 
-
         })
+
 
 
     except ValueError as error:
@@ -291,6 +330,8 @@ def update_status(id):
             str(error)
 
         }),400
+
+
 
 # ==========================================================
 # LISTAR ROLES
@@ -304,15 +345,16 @@ def update_status(id):
 @requiere_rol("ADMINISTRADOR")
 def roles():
 
-
     datos = listar_roles()
 
 
     return jsonify({
 
-        "roles": datos
+        "roles":datos
 
     })
+
+
 
 # ==========================================================
 # LISTAR PERMISOS
@@ -326,15 +368,16 @@ def roles():
 @requiere_rol("ADMINISTRADOR")
 def permissions():
 
-
     datos = listar_permisos()
 
 
     return jsonify({
 
-        "permisos": datos
+        "permisos":datos
 
     })
+
+
 
 # ==========================================================
 # ASIGNAR PERMISOS A ROL
@@ -354,9 +397,23 @@ def assign_permissions(id):
         data = request.get_json()
 
 
+        if not data or "permissions" not in data:
+
+            return jsonify({
+
+                "mensaje":
+                "Debe enviar permisos"
+
+            }),400
+
+
+
         rol = asignar_permisos_rol(
+
             id,
+
             data["permissions"]
+
         )
 
 
@@ -371,12 +428,14 @@ def assign_permissions(id):
                 "id":
                 rol.id,
 
+
                 "nombre":
                 rol.name
 
             }
 
         })
+
 
 
     except ValueError as error:
@@ -388,6 +447,13 @@ def assign_permissions(id):
             str(error)
 
         }),400
+
+
+
+# ==========================================================
+# OBTENER PERMISOS DE ROL
+# ==========================================================
+
 @admin_bp.route(
     "/roles/<int:id>/permissions",
     methods=["GET"]
@@ -406,11 +472,15 @@ def get_role_permissions(id):
 
             "rol":{
 
-                "id":resultado["id"],
+                "id":
+                resultado["id"],
 
-                "nombre":resultado["nombre"]
+
+                "nombre":
+                resultado["nombre"]
 
             },
+
 
             "permisos":
             resultado["permisos"]
@@ -418,11 +488,13 @@ def get_role_permissions(id):
         })
 
 
+
     except ValueError as error:
 
 
         return jsonify({
 
-            "mensaje":str(error)
+            "mensaje":
+            str(error)
 
         }),400

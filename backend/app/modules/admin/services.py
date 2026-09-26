@@ -2,7 +2,12 @@ from werkzeug.security import generate_password_hash
 
 from app.extensions.database import db
 
-from app.modules.auth.models import Usuario, Rol,Permiso,RolPermiso
+from app.modules.auth.models import (
+    Usuario,
+    Rol,
+    Permiso,
+    RolPermiso
+)
 
 from app.modules.academic.models import Persona
 
@@ -58,18 +63,105 @@ def crear_usuario(data):
 
 
     # ======================================
+    # VALIDAR DATOS OBLIGATORIOS
+    # ======================================
+
+    campos_obligatorios = [
+
+        "email",
+        "password",
+        "dni",
+        "nombres",
+        "apellidos",
+        "role_id"
+
+    ]
+
+
+    for campo in campos_obligatorios:
+
+
+        if campo not in data or not str(data[campo]).strip():
+
+
+            raise ValueError(
+
+                f"El campo {campo} es obligatorio"
+
+            )
+
+
+
+    # ======================================
+    # LIMPIAR DATOS
+    # ======================================
+
+    email = data["email"].strip().lower()
+
+    dni = data["dni"].strip()
+
+    nombres = data["nombres"].strip()
+
+    apellidos = data["apellidos"].strip()
+
+    password = data["password"].strip()
+
+
+
+    # ======================================
+    # VALIDAR PASSWORD
+    # ======================================
+
+    if len(password) < 8:
+
+        raise ValueError(
+
+            "La contraseña debe tener mínimo 8 caracteres"
+
+        )
+
+
+
+    # ======================================
+    # VALIDAR DNI
+    # ======================================
+
+    if not dni.isdigit():
+
+        raise ValueError(
+
+            "El DNI solo debe contener números"
+
+        )
+
+
+    if len(dni) != 8:
+
+        raise ValueError(
+
+            "El DNI debe tener 8 dígitos"
+
+        )
+
+
+
+    # ======================================
     # VALIDAR EMAIL DUPLICADO
     # ======================================
 
     usuario_existente = Usuario.query.filter_by(
-        email=data["email"]
+
+        email=email
+
     ).first()
 
 
     if usuario_existente:
 
         raise ValueError(
+
             "El correo ya está registrado"
+
         )
 
 
@@ -79,14 +171,18 @@ def crear_usuario(data):
     # ======================================
 
     persona_existente = Persona.query.filter_by(
-        dni=data["dni"]
+
+        dni=dni
+
     ).first()
 
 
     if persona_existente:
 
         raise ValueError(
+
             "El DNI ya está registrado"
+
         )
 
 
@@ -96,14 +192,18 @@ def crear_usuario(data):
     # ======================================
 
     rol = Rol.query.get(
+
         data["role_id"]
+
     )
 
 
     if not rol:
 
         raise ValueError(
+
             "El rol seleccionado no existe"
+
         )
 
 
@@ -114,11 +214,11 @@ def crear_usuario(data):
 
     persona = Persona(
 
-        dni=data["dni"],
+        dni=dni,
 
-        nombres=data["nombres"],
+        nombres=nombres,
 
-        apellidos=data["apellidos"],
+        apellidos=apellidos,
 
         telefono=data.get("telefono"),
 
@@ -141,10 +241,12 @@ def crear_usuario(data):
 
         persona_id=persona.id,
 
-        email=data["email"],
+        email=email,
 
         password_hash=generate_password_hash(
-            data["password"]
+
+            password
+
         ),
 
         role_id=rol.id,
@@ -161,6 +263,11 @@ def crear_usuario(data):
 
 
     return usuario
+
+
+
+
+
 # ==========================================================
 # ACTUALIZAR USUARIO
 # ==========================================================
@@ -174,28 +281,39 @@ def actualizar_usuario(usuario_id, data):
     if not usuario:
 
         raise ValueError(
+
             "El usuario no existe"
+
         )
+
 
 
     # Validar correo si cambia
 
     if "email" in data:
 
+
         correo = Usuario.query.filter(
+
             Usuario.email == data["email"],
+
             Usuario.id != usuario_id
+
         ).first()
+
 
 
         if correo:
 
             raise ValueError(
+
                 "El correo ya está registrado"
+
             )
 
 
         usuario.email = data["email"]
+
 
 
 
@@ -204,9 +322,11 @@ def actualizar_usuario(usuario_id, data):
     persona = usuario.persona
 
 
+
     if "nombres" in data:
 
         persona.nombres = data["nombres"]
+
 
 
     if "apellidos" in data:
@@ -214,14 +334,17 @@ def actualizar_usuario(usuario_id, data):
         persona.apellidos = data["apellidos"]
 
 
+
     if "telefono" in data:
 
         persona.telefono = data["telefono"]
 
 
+
     if "direccion" in data:
 
         persona.direccion = data["direccion"]
+
 
 
 
@@ -231,14 +354,18 @@ def actualizar_usuario(usuario_id, data):
 
 
         rol = Rol.query.get(
+
             data["role_id"]
+
         )
 
 
         if not rol:
 
             raise ValueError(
+
                 "El rol seleccionado no existe"
+
             )
 
 
@@ -246,10 +373,15 @@ def actualizar_usuario(usuario_id, data):
 
 
 
+
     db.session.commit()
 
 
     return usuario
+
+
+
+
 
 # ==========================================================
 # CAMBIAR ESTADO USUARIO
@@ -261,11 +393,25 @@ def cambiar_estado_usuario(usuario_id, estado):
     usuario = Usuario.query.get(usuario_id)
 
 
+
     if not usuario:
 
         raise ValueError(
+
             "El usuario no existe"
+
         )
+
+
+
+    if not isinstance(estado, bool):
+
+        raise ValueError(
+
+            "El estado debe ser verdadero o falso"
+
+        )
+
 
 
     usuario.status = estado
@@ -275,18 +421,26 @@ def cambiar_estado_usuario(usuario_id, estado):
 
 
     return usuario
+
+
+
+
+
 # ==========================================================
 # LISTAR ROLES
 # ==========================================================
 
 def listar_roles():
 
+
     roles = Rol.query.all()
+
 
     resultado = []
 
 
     for rol in roles:
+
 
         resultado.append({
 
@@ -300,18 +454,26 @@ def listar_roles():
 
 
     return resultado
+
+
+
+
+
 # ==========================================================
 # LISTAR PERMISOS
 # ==========================================================
 
 def listar_permisos():
 
+
     permisos = Permiso.query.all()
+
 
     resultado = []
 
 
     for permiso in permisos:
+
 
         resultado.append({
 
@@ -326,6 +488,10 @@ def listar_permisos():
 
     return resultado
 
+
+
+
+
 # ==========================================================
 # ASIGNAR PERMISOS A ROL
 # ==========================================================
@@ -336,36 +502,43 @@ def asignar_permisos_rol(role_id, permisos_ids):
     rol = Rol.query.get(role_id)
 
 
+
     if not rol:
 
         raise ValueError(
+
             "El rol no existe"
+
         )
 
 
-    # eliminar permisos actuales
 
     RolPermiso.query.filter_by(
+
         role_id=role_id
+
     ).delete()
 
 
-
-    # agregar nuevos permisos
 
     for permiso_id in permisos_ids:
 
 
         permiso = Permiso.query.get(
+
             permiso_id
+
         )
 
 
         if not permiso:
 
             raise ValueError(
+
                 f"El permiso {permiso_id} no existe"
+
             )
+
 
 
         relacion = RolPermiso(
@@ -381,10 +554,17 @@ def asignar_permisos_rol(role_id, permisos_ids):
 
 
 
+
     db.session.commit()
 
 
+
     return rol
+
+
+
+
+
 # ==========================================================
 # OBTENER PERMISOS DE UN ROL
 # ==========================================================
@@ -395,25 +575,33 @@ def obtener_permisos_rol(role_id):
     rol = Rol.query.get(role_id)
 
 
+
     if not rol:
 
         raise ValueError(
+
             "El rol no existe"
+
         )
+
 
 
     permisos = []
 
 
+
     for relacion in rol.permisos:
+
 
         permisos.append({
 
             "id":
             relacion.permiso.id,
 
+
             "nombre":
             relacion.permiso.name,
+
 
             "descripcion":
             relacion.permiso.description
@@ -421,7 +609,9 @@ def obtener_permisos_rol(role_id):
         })
 
 
+
     return {
+
 
         "id": rol.id,
 
