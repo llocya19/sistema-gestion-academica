@@ -27,3 +27,17 @@ export async function obtenerRoles() {
   const respuesta = await api.get("/admin/roles");
   return respuesta.data.roles;
 }
+
+export async function cambiarEstadoUsuario(
+  usuarioId: number,
+  estado: boolean
+) {
+  const respuesta = await api.patch(
+    `/admin/users/${usuarioId}/status`,
+    {
+      status: estado,
+    }
+  );
+
+  return respuesta.data;
+}

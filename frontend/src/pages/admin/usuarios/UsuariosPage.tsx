@@ -1,6 +1,9 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { obtenerUsuarios } from "../../../services/adminService";
+import {
+  obtenerUsuarios,
+  cambiarEstadoUsuario,
+} from "../../../services/adminService";
 
 type Usuario = {
   id: number;
@@ -26,6 +29,27 @@ function UsuariosPage() {
     cargarUsuarios();
   }, []);
 
+  async function manejarCambioEstado(
+    usuarioId: number,
+    estadoActual: boolean
+  ) {
+    await cambiarEstadoUsuario(
+      usuarioId,
+      !estadoActual
+    );
+
+    setUsuarios((usuariosActuales) =>
+      usuariosActuales.map((usuario) =>
+        usuario.id === usuarioId
+          ? {
+              ...usuario,
+              estado: !estadoActual,
+            }
+          : usuario
+      )
+    );
+  }
+
   return (
     <main>
       <h1>Gestión de usuarios</h1>
@@ -41,6 +65,7 @@ function UsuariosPage() {
             <th>Correo</th>
             <th>Rol</th>
             <th>Estado</th>
+            <th>Acciones</th>
           </tr>
         </thead>
 
@@ -57,6 +82,20 @@ function UsuariosPage() {
 
               <td>
                 {usuario.estado ? "Activo" : "Inactivo"}
+              </td>
+
+              <td>
+                <button
+                  type="button"
+                  onClick={() =>
+                    manejarCambioEstado(
+                      usuario.id,
+                      usuario.estado
+                    )
+                  }
+                >
+                  {usuario.estado ? "Desactivar" : "Activar"}
+                </button>
               </td>
             </tr>
           ))}

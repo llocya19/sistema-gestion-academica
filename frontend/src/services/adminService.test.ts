@@ -3,13 +3,15 @@ import api from "../api/axiosConfig";
 import {
   obtenerUsuarios,
   crearUsuario,
-  obtenerRoles
+  obtenerRoles,
+  cambiarEstadoUsuario
 } from "./adminService";
 
 vi.mock("../api/axiosConfig", () => ({
   default: {
     get: vi.fn(),
     post: vi.fn(),
+    patch: vi.fn(),
   },
 }));
 
@@ -72,29 +74,53 @@ describe("adminService - HU02", () => {
   });
 
   it("obtiene los roles disponibles desde el backend", async () => {
-  const roles = [
-    {
-      id: 1,
-      nombre: "ADMINISTRADOR",
-      descripcion: "Administrador del sistema",
-    },
-    {
-      id: 2,
-      nombre: "DIRECTORA",
-      descripcion: "Directora",
-    },
-  ];
+    const roles = [
+      {
+        id: 1,
+        nombre: "ADMINISTRADOR",
+        descripcion: "Administrador del sistema",
+      },
+      {
+        id: 2,
+        nombre: "DIRECTORA",
+        descripcion: "Directora",
+      },
+    ];
 
-  vi.mocked(api.get).mockResolvedValue({
-    data: {
-      roles,
-    },
+    vi.mocked(api.get).mockResolvedValue({
+      data: {
+        roles,
+      },
+    });
+
+    const resultado = await obtenerRoles();
+
+    expect(api.get).toHaveBeenCalledWith("/admin/roles");
+    expect(resultado).toEqual(roles);
   });
 
-  const resultado = await obtenerRoles();
+  it("cambia el estado de una cuenta de usuario", async () => {
+    vi.mocked(api.patch).mockResolvedValue({
+      data: {
+        mensaje: "Estado actualizado correctamente",
+      },
+    });
 
-  expect(api.get).toHaveBeenCalledWith("/admin/roles");
-  expect(resultado).toEqual(roles);
-});
+    const resultado = await cambiarEstadoUsuario(
+      2,
+      false
+    );
+
+    expect(api.patch).toHaveBeenCalledWith(
+      "/admin/users/2/status",
+      {
+        status: false,
+      }
+    );
+
+    expect(resultado).toEqual({
+      mensaje: "Estado actualizado correctamente",
+    });
+  });
 
 });
