@@ -8,6 +8,9 @@ import Login from "../pages/auth/Login";
 import Home from "../pages/home/Home";
 import ProtectedRoute from "./ProtectedRoute";
 import { AuthProvider } from "../context/AuthContext";
+import AdminDashboard from "../pages/admin/AdminDashboard";
+import UsuariosPage from "../pages/admin/usuarios/UsuariosPage";
+import NuevoUsuarioPage from "../pages/admin/usuarios/NuevoUsuarioPage";
 
 
 function AppRouter() {
@@ -34,8 +37,34 @@ function AppRouter() {
             }
           />
 
+          <Route
+            path="/admin"
+            element={
+              <ProtectedRoute>
+                <AdminDashboard />
+              </ProtectedRoute>
+            }
+          />
 
-        
+          <Route
+            path="/admin/usuarios"
+            element={
+              <ProtectedRoute>
+                <UsuariosPage />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/admin/usuarios/nuevo"
+            element={
+              <ProtectedRoute>
+                <NuevoUsuarioPage />
+              </ProtectedRoute>
+            }
+          />
+
+
 
         </Routes>
 

@@ -40,7 +40,11 @@ const handleSubmit = async (e: React.FormEvent) => {
       response.usuario
     );
 
-    navigate("/home");
+    if (response.usuario.rol === "ADMINISTRADOR") {
+      navigate("/admin");
+    } else {
+      navigate("/home");
+    }
 
   } catch (error) {
 

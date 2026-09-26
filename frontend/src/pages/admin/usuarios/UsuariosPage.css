@@ -1,0 +1,267 @@
+.usuarios-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 24px;
+  margin-bottom: 24px;
+}
+
+.usuarios-header .admin-page-title {
+  margin-bottom: 0;
+}
+
+.usuarios-nuevo {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 11px 18px;
+
+  background: #e66a19;
+  color: #ffffff;
+
+  border-radius: 8px;
+
+  text-decoration: none;
+  font-weight: 600;
+  white-space: nowrap;
+
+  transition:
+    background 0.2s ease,
+    transform 0.2s ease;
+}
+
+.usuarios-nuevo:hover {
+  background: #cf5b12;
+  transform: translateY(-1px);
+}
+
+/* Navegación activa */
+
+.admin-nav .admin-nav-active {
+  background: #fff2e8;
+  color: #d85f12;
+  font-weight: 600;
+}
+
+/* Contenedor principal */
+
+.usuarios-card {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+
+  overflow: hidden;
+
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.usuarios-card-header {
+  padding: 22px 24px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.usuarios-card-header h2 {
+  font-size: 18px;
+  color: #1f2937;
+  margin-bottom: 5px;
+}
+
+.usuarios-card-header p {
+  font-size: 14px;
+  color: #6b7280;
+}
+
+/* Tabla */
+
+.usuarios-tabla-contenedor {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.usuarios-tabla {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.usuarios-tabla th {
+  padding: 13px 20px;
+
+  background: #f9fafb;
+  border-bottom: 1px solid #e5e7eb;
+
+  color: #6b7280;
+
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.usuarios-tabla td {
+  padding: 17px 20px;
+  border-bottom: 1px solid #eeeeee;
+
+  color: #374151;
+  font-size: 14px;
+  vertical-align: middle;
+}
+
+.usuarios-tabla tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.usuarios-tabla tbody tr:hover {
+  background: #fcfcfc;
+}
+
+/* Datos del usuario */
+
+.usuario-datos {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.usuario-avatar {
+  width: 38px;
+  height: 38px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  flex-shrink: 0;
+
+  border-radius: 50%;
+
+  background: #fff0e6;
+  color: #d85f12;
+
+  font-weight: 700;
+}
+
+.usuario-datos > div:last-child {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.usuario-datos strong {
+  color: #1f2937;
+}
+
+.usuario-datos span {
+  color: #9ca3af;
+  font-size: 12px;
+}
+
+/* Rol */
+
+.usuario-rol {
+  display: inline-block;
+
+  padding: 5px 9px;
+
+  border-radius: 6px;
+
+  background: #f3f4f6;
+  color: #4b5563;
+
+  font-size: 12px;
+  font-weight: 600;
+}
+
+/* Estado */
+
+.estado {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+
+  padding: 5px 9px;
+
+  border-radius: 20px;
+
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.estado-punto {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+}
+
+.estado-activo {
+  background: #ecfdf3;
+  color: #16794a;
+}
+
+.estado-activo .estado-punto {
+  background: #22a866;
+}
+
+.estado-inactivo {
+  background: #f3f4f6;
+  color: #6b7280;
+}
+
+.estado-inactivo .estado-punto {
+  background: #9ca3af;
+}
+
+/* Acciones */
+
+.usuario-accion {
+  padding: 7px 11px;
+
+  border-radius: 7px;
+  border: 1px solid;
+
+  background: #ffffff;
+
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.usuario-desactivar {
+  color: #b42318;
+  border-color: #f0c5c2;
+}
+
+.usuario-desactivar:hover {
+  background: #fff4f3;
+}
+
+.usuario-activar {
+  color: #16794a;
+  border-color: #b7dfca;
+}
+
+.usuario-activar:hover {
+  background: #f0faf5;
+}
+
+/* Responsive */
+
+@media (max-width: 768px) {
+  .usuarios-header {
+    flex-direction: column;
+  }
+
+  .usuarios-nuevo {
+    width: 100%;
+  }
+
+  .usuarios-tabla {
+    min-width: 760px;
+  }
+}
+
