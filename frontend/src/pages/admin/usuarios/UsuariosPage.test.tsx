@@ -7,6 +7,7 @@ import {
   cambiarEstadoUsuario,
 } from "../../../services/adminService";
 import userEvent from "@testing-library/user-event";
+import { AuthProvider } from "../../../context/AuthContext";
 
 vi.mock("../../../services/adminService", () => ({
   obtenerUsuarios: vi.fn(),
@@ -45,7 +46,9 @@ describe("UsuariosPage - HU02", () => {
 
     render(
       <MemoryRouter>
-        <UsuariosPage />
+        <AuthProvider>
+          <UsuariosPage />
+        </AuthProvider>
       </MemoryRouter>
     );
 
@@ -92,7 +95,9 @@ describe("UsuariosPage - HU02", () => {
 
     render(
       <MemoryRouter>
-        <UsuariosPage />
+        <AuthProvider>
+          <UsuariosPage />
+        </AuthProvider>
       </MemoryRouter>
     );
 
@@ -134,7 +139,9 @@ describe("UsuariosPage - HU02", () => {
 
     render(
       <MemoryRouter>
-        <UsuariosPage />
+        <AuthProvider>
+          <UsuariosPage />
+        </AuthProvider>
       </MemoryRouter>
     );
 
@@ -174,7 +181,9 @@ describe("UsuariosPage - HU02", () => {
 
     render(
       <MemoryRouter>
-        <UsuariosPage />
+        <AuthProvider>
+          <UsuariosPage />
+        </AuthProvider>
       </MemoryRouter>
     );
 
@@ -216,7 +225,9 @@ describe("UsuariosPage - HU02", () => {
 
     render(
       <MemoryRouter>
-        <UsuariosPage />
+        <AuthProvider>
+          <UsuariosPage />
+        </AuthProvider>
       </MemoryRouter>
     );
 

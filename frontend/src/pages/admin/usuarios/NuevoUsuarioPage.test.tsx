@@ -1,7 +1,14 @@
 import { describe, expect, it, vi } from "vitest";
-import { render, screen } from "@testing-library/react";
+import {
+  render,
+  screen,
+} from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { MemoryRouter } from "react-router-dom";
+
 import NuevoUsuarioPage from "./NuevoUsuarioPage";
+import { AuthProvider } from "../../../context/AuthContext";
+
 import {
   obtenerRoles,
   crearUsuario,
@@ -12,243 +19,264 @@ vi.mock("../../../services/adminService", () => ({
   crearUsuario: vi.fn(),
 }));
 
-describe("NuevoUsuarioPage - HU02 CA01", () => {
-
-  it("muestra el formulario para crear una cuenta de usuario", async () => {
-    vi.mocked(obtenerRoles).mockResolvedValue([]);
-
-    render(<NuevoUsuarioPage />);
-
-    expect(
-      screen.getByRole("heading", {
-        name: /nuevo usuario/i,
-      })
-    ).toBeInTheDocument();
-
-    expect(
-      screen.getByLabelText(/dni/i)
-    ).toBeInTheDocument();
-
-    expect(
-      screen.getByLabelText(/nombres/i)
-    ).toBeInTheDocument();
-
-    expect(
-      screen.getByLabelText(/apellidos/i)
-    ).toBeInTheDocument();
-
-    expect(
-      screen.getByLabelText(/correo electrónico/i)
-    ).toBeInTheDocument();
-
-    expect(
-      screen.getByLabelText(/^contraseña$/i)
-    ).toBeInTheDocument();
-
-    expect(
-      screen.getByLabelText(/rol/i)
-    ).toBeInTheDocument();
-
-    expect(
-      screen.getByRole("button", {
-        name: /crear usuario/i,
-      })
-    ).toBeInTheDocument();
-
-    expect(
-      await screen.findByText("Seleccione un rol")
-    ).toBeInTheDocument();
-  });
+function renderizarPagina() {
+  return render(
+    <MemoryRouter>
+      <AuthProvider>
+        <NuevoUsuarioPage />
+      </AuthProvider>
+    </MemoryRouter>
+  );
+}
 
 
-  it("carga y muestra los roles disponibles", async () => {
-    const roles = [
-      {
-        id: 1,
-        nombre: "ADMINISTRADOR",
-        descripcion: "Administrador del sistema",
-      },
-      {
-        id: 2,
-        nombre: "DIRECTORA",
-        descripcion: "Directora",
-      },
-      {
-        id: 3,
-        nombre: "SECRETARIA",
-        descripcion: "Secretaría",
-      },
-      {
-        id: 4,
-        nombre: "DOCENTE",
-        descripcion: "Docente",
-      },
-    ];
 
-    vi.mocked(obtenerRoles).mockResolvedValue(roles);
+describe("NuevoUsuarioPage - HU02", () => {
+  it(
+    "muestra el formulario para crear una cuenta de usuario",
+    async () => {
+      vi.mocked(obtenerRoles).mockResolvedValue([]);
 
-    render(<NuevoUsuarioPage />);
+      renderizarPagina();
 
-    expect(
-      await screen.findByRole("option", {
-        name: "ADMINISTRADOR",
-      })
-    ).toBeInTheDocument();
+      expect(
+        screen.getByRole("heading", {
+          name: /nuevo usuario/i,
+        })
+      ).toBeInTheDocument();
 
-    expect(
-      screen.getByRole("option", {
-        name: "DIRECTORA",
-      })
-    ).toBeInTheDocument();
+      expect(
+        screen.getByLabelText(/dni/i)
+      ).toBeInTheDocument();
 
-    expect(
-      screen.getByRole("option", {
-        name: "SECRETARIA",
-      })
-    ).toBeInTheDocument();
+      expect(
+        screen.getByLabelText(/nombres/i)
+      ).toBeInTheDocument();
 
-    expect(
-      screen.getByRole("option", {
-        name: "DOCENTE",
-      })
-    ).toBeInTheDocument();
-  });
+      expect(
+        screen.getByLabelText(/apellidos/i)
+      ).toBeInTheDocument();
 
-  it("envía los datos para crear una cuenta de usuario", async () => {
-  const user = userEvent.setup();
+      expect(
+        screen.getByLabelText(/correo electrónico/i)
+      ).toBeInTheDocument();
 
-  const roles = [
-    {
-      id: 4,
-      nombre: "DOCENTE",
-      descripcion: "Docente",
-    },
-  ];
+      expect(
+        screen.getByLabelText(/^contraseña$/i)
+      ).toBeInTheDocument();
 
-  vi.mocked(obtenerRoles).mockResolvedValue(roles);
+      expect(
+        screen.getByLabelText(/rol/i)
+      ).toBeInTheDocument();
 
-  vi.mocked(crearUsuario).mockResolvedValue({
-    mensaje: "Usuario creado correctamente",
-  });
+      expect(
+        screen.getByRole("button", {
+          name: /crear usuario/i,
+        })
+      ).toBeInTheDocument();
 
-  render(<NuevoUsuarioPage />);
-
-  await screen.findByRole("option", {
-    name: "DOCENTE",
-  });
-
-  await user.type(
-    screen.getByLabelText(/dni/i),
-    "12345678"
+      expect(
+        await screen.findByText("Seleccione un rol")
+      ).toBeInTheDocument();
+    }
   );
 
-  await user.type(
-    screen.getByLabelText(/nombres/i),
-    "Pedro"
-  );
-
-  await user.type(
-    screen.getByLabelText(/apellidos/i),
-    "García"
-  );
-
-  await user.type(
-    screen.getByLabelText(/correo electrónico/i),
-    "pedro@test.com"
-  );
-
-  await user.type(
-    screen.getByLabelText(/^contraseña$/i),
-    "123456"
-  );
-
-  await user.selectOptions(
-    screen.getByLabelText(/rol/i),
-    "4"
-  );
-
-  await user.click(
-    screen.getByRole("button", {
-      name: /crear usuario/i,
-    })
-  );
-
-  expect(crearUsuario).toHaveBeenCalledWith({
-    dni: "12345678",
-    nombres: "Pedro",
-    apellidos: "García",
-    email: "pedro@test.com",
-    password: "123456",
-    role_id: 4,
-  });
-  
-});
-
-    it("muestra un mensaje cuando el usuario se crea correctamente", async () => {
-    const user = userEvent.setup();
-
-    vi.mocked(obtenerRoles).mockResolvedValue([
+  it(
+    "carga y muestra los roles disponibles",
+    async () => {
+      const roles = [
         {
-        id: 4,
-        nombre: "DOCENTE",
-        descripcion: "Docente",
+          id: 1,
+          nombre: "ADMINISTRADOR",
+          descripcion: "Administrador del sistema",
         },
-    ]);
+        {
+          id: 2,
+          nombre: "DIRECTORA",
+          descripcion: "Directora",
+        },
+        {
+          id: 3,
+          nombre: "SECRETARIA",
+          descripcion: "Secretaría",
+        },
+        {
+          id: 4,
+          nombre: "DOCENTE",
+          descripcion: "Docente",
+        },
+      ];
 
-    vi.mocked(crearUsuario).mockResolvedValue({
+      vi.mocked(obtenerRoles).mockResolvedValue(roles);
+
+      renderizarPagina();
+
+      expect(
+        await screen.findByRole("option", {
+          name: "ADMINISTRADOR",
+        })
+      ).toBeInTheDocument();
+
+      expect(
+        screen.getByRole("option", {
+          name: "DIRECTORA",
+        })
+      ).toBeInTheDocument();
+
+      expect(
+        screen.getByRole("option", {
+          name: "SECRETARIA",
+        })
+      ).toBeInTheDocument();
+
+      expect(
+        screen.getByRole("option", {
+          name: "DOCENTE",
+        })
+      ).toBeInTheDocument();
+    }
+  );
+
+  it(
+    "envía los datos para crear una cuenta de usuario",
+    async () => {
+      const user = userEvent.setup();
+
+      vi.mocked(obtenerRoles).mockResolvedValue([
+        {
+          id: 4,
+          nombre: "DOCENTE",
+          descripcion: "Docente",
+        },
+      ]);
+
+      vi.mocked(crearUsuario).mockResolvedValue({
         mensaje: "Usuario creado correctamente",
-    });
+      });
 
-    render(<NuevoUsuarioPage />);
+      renderizarPagina();
 
-    await screen.findByRole("option", {
+      await screen.findByRole("option", {
         name: "DOCENTE",
-    });
+      });
 
-    await user.type(
+      await user.type(
         screen.getByLabelText(/dni/i),
-        "11223344"
-    );
+        "12345678"
+      );
 
-    await user.type(
+      await user.type(
         screen.getByLabelText(/nombres/i),
-        "Carlos"
-    );
+        "Pedro"
+      );
 
-    await user.type(
+      await user.type(
         screen.getByLabelText(/apellidos/i),
-        "Prueba"
-    );
+        "García"
+      );
 
-    await user.type(
+      await user.type(
         screen.getByLabelText(/correo electrónico/i),
-        "carlos@test.com"
-    );
+        "pedro@test.com"
+      );
 
-    await user.type(
+      await user.type(
         screen.getByLabelText(/^contraseña$/i),
         "123456"
-    );
+      );
 
-    await user.selectOptions(
+      await user.selectOptions(
         screen.getByLabelText(/rol/i),
         "4"
-    );
+      );
 
-    await user.click(
+      await user.click(
         screen.getByRole("button", {
-        name: /crear usuario/i,
+          name: /crear usuario/i,
         })
-    );
+      );
 
-    expect(
+      expect(crearUsuario).toHaveBeenCalledWith({
+        dni: "12345678",
+        nombres: "Pedro",
+        apellidos: "García",
+        email: "pedro@test.com",
+        password: "123456",
+        role_id: 4,
+      });
+    }
+  );
+
+  it(
+    "muestra un mensaje cuando el usuario se crea correctamente",
+    async () => {
+      const user = userEvent.setup();
+
+      vi.mocked(obtenerRoles).mockResolvedValue([
+        {
+          id: 4,
+          nombre: "DOCENTE",
+          descripcion: "Docente",
+        },
+      ]);
+
+      vi.mocked(crearUsuario).mockResolvedValue({
+        mensaje: "Usuario creado correctamente",
+      });
+
+      renderizarPagina();
+
+      await screen.findByRole("option", {
+        name: "DOCENTE",
+      });
+
+      await user.type(
+        screen.getByLabelText(/dni/i),
+        "11223344"
+      );
+
+      await user.type(
+        screen.getByLabelText(/nombres/i),
+        "Carlos"
+      );
+
+      await user.type(
+        screen.getByLabelText(/apellidos/i),
+        "Prueba"
+      );
+
+      await user.type(
+        screen.getByLabelText(/correo electrónico/i),
+        "carlos@test.com"
+      );
+
+      await user.type(
+        screen.getByLabelText(/^contraseña$/i),
+        "123456"
+      );
+
+      await user.selectOptions(
+        screen.getByLabelText(/rol/i),
+        "4"
+      );
+
+      await user.click(
+        screen.getByRole("button", {
+          name: /crear usuario/i,
+        })
+      );
+
+      expect(
         await screen.findByText(
-        "Usuario creado correctamente"
+          "Usuario creado correctamente"
         )
-    ).toBeInTheDocument();
-    });
+      ).toBeInTheDocument();
+    }
+  );
 
-    it("muestra un error cuando el correo ya está registrado", async () => {
+  it(
+    "muestra un error cuando el correo ya está registrado",
+    async () => {
       const user = userEvent.setup();
 
       vi.mocked(obtenerRoles).mockResolvedValue([
@@ -267,7 +295,7 @@ describe("NuevoUsuarioPage - HU02 CA01", () => {
         },
       });
 
-      render(<NuevoUsuarioPage />);
+      renderizarPagina();
 
       await screen.findByRole("option", {
         name: "DOCENTE",
@@ -314,74 +342,107 @@ describe("NuevoUsuarioPage - HU02 CA01", () => {
           "El correo ya está registrado"
         )
       ).toBeInTheDocument();
-    });
+    }
+  );
 
-    it("muestra un error cuando el DNI ya está registrado", async () => {
-    const user = userEvent.setup();
+  it(
+    "muestra un error cuando el DNI ya está registrado",
+    async () => {
+      const user = userEvent.setup();
 
-    vi.mocked(obtenerRoles).mockResolvedValue([
-      {
-        id: 4,
-        nombre: "DOCENTE",
-        descripcion: "Docente",
-      },
-    ]);
-
-    vi.mocked(crearUsuario).mockRejectedValue({
-      response: {
-        data: {
-          mensaje: "El DNI ya está registrado",
+      vi.mocked(obtenerRoles).mockResolvedValue([
+        {
+          id: 4,
+          nombre: "DOCENTE",
+          descripcion: "Docente",
         },
-      },
-    });
+      ]);
 
-    render(<NuevoUsuarioPage />);
+      vi.mocked(crearUsuario).mockRejectedValue({
+        response: {
+          data: {
+            mensaje: "El DNI ya está registrado",
+          },
+        },
+      });
 
-    await screen.findByRole("option", {
-      name: "DOCENTE",
-    });
+      renderizarPagina();
 
-    await user.type(
-      screen.getByLabelText(/dni/i),
-      "12345678"
-    );
+      await screen.findByRole("option", {
+        name: "DOCENTE",
+      });
 
-    await user.type(
-      screen.getByLabelText(/nombres/i),
-      "Pedro"
-    );
+      await user.type(
+        screen.getByLabelText(/dni/i),
+        "12345678"
+      );
 
-    await user.type(
-      screen.getByLabelText(/apellidos/i),
-      "Prueba"
-    );
+      await user.type(
+        screen.getByLabelText(/nombres/i),
+        "Pedro"
+      );
 
-    await user.type(
-      screen.getByLabelText(/correo electrónico/i),
-      "correo-nuevo@test.com"
-    );
+      await user.type(
+        screen.getByLabelText(/apellidos/i),
+        "Prueba"
+      );
 
-    await user.type(
-      screen.getByLabelText(/^contraseña$/i),
-      "123456"
-    );
+      await user.type(
+        screen.getByLabelText(/correo electrónico/i),
+        "correo-nuevo@test.com"
+      );
 
-    await user.selectOptions(
-      screen.getByLabelText(/rol/i),
-      "4"
-    );
+      await user.type(
+        screen.getByLabelText(/^contraseña$/i),
+        "123456"
+      );
 
-    await user.click(
-      screen.getByRole("button", {
-        name: /crear usuario/i,
-      })
-    );
+      await user.selectOptions(
+        screen.getByLabelText(/rol/i),
+        "4"
+      );
 
-    expect(
-      await screen.findByText(
-        "El DNI ya está registrado"
-      )
-    ).toBeInTheDocument();
-  });
+      await user.click(
+        screen.getByRole("button", {
+          name: /crear usuario/i,
+        })
+      );
 
+      expect(
+        await screen.findByText(
+          "El DNI ya está registrado"
+        )
+      ).toBeInTheDocument();
+    }
+  );
+
+  it(
+    "configura los campos obligatorios y valida el formato del DNI",
+    async () => {
+      vi.mocked(obtenerRoles).mockResolvedValue([]);
+
+      renderizarPagina();
+
+      // Esperamos a que termine la carga asíncrona de roles
+      await screen.findByText("Seleccione un rol");
+
+      const dni = screen.getByLabelText(/dni/i);
+      const nombres = screen.getByLabelText(/nombres/i);
+      const apellidos = screen.getByLabelText(/apellidos/i);
+      const email = screen.getByLabelText(/correo electrónico/i);
+      const password = screen.getByLabelText(/^contraseña$/i);
+      const rol = screen.getByLabelText(/rol/i);
+
+      expect(dni).toBeRequired();
+      expect(nombres).toBeRequired();
+      expect(apellidos).toBeRequired();
+      expect(email).toBeRequired();
+      expect(password).toBeRequired();
+      expect(rol).toBeRequired();
+
+      expect(dni).toHaveAttribute("maxlength", "8");
+      expect(dni).toHaveAttribute("pattern", "[0-9]{8}");
+      expect(dni).toHaveAttribute("inputmode", "numeric");
+    }
+  );
 });
