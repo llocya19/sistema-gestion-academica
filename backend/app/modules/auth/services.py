@@ -20,8 +20,9 @@ def autenticar_usuario(email, password):
         raise ValueError("Contraseña incorrecta")
 
 
-    if usuario.status != "ACTIVO":
+    if not usuario.status:
         raise ValueError("Usuario desactivado")
 
 
     return usuario
+
