@@ -19,14 +19,23 @@ auth_bp = Blueprint(
 )
 def login():
 
-
     data = request.get_json()
 
 
-    usuario = autenticar_usuario(
-        data.get("email"),
-        data.get("password")
-    )
+    try:
+
+        usuario = autenticar_usuario(
+            data.get("email"),
+            data.get("password")
+        )
+
+
+    except ValueError as error:
+
+        return jsonify({
+            "mensaje": str(error)
+        }),403
+
 
 
     if not usuario:
@@ -78,7 +87,6 @@ def login():
         }
 
     })
-
 
 #ddedede
 from flask_jwt_extended import jwt_required
