@@ -11,6 +11,9 @@ import { AuthProvider } from "../context/AuthContext";
 import AdminDashboard from "../pages/admin/AdminDashboard";
 import UsuariosPage from "../pages/admin/usuarios/UsuariosPage";
 import NuevoUsuarioPage from "../pages/admin/usuarios/NuevoUsuarioPage";
+import SecretariaDashboard from "../pages/secretaria/SecretariaDashboard";
+import EstudiantesPage from "../pages/secretaria/estudiantes/EstudiantesPage";
+import NuevoEstudiantePage from "../pages/secretaria/estudiantes/NuevoEstudiantePage";
 
 
 function AppRouter() {
@@ -60,6 +63,33 @@ function AppRouter() {
             element={
               <ProtectedRoute>
                 <NuevoUsuarioPage />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/secretaria"
+            element={
+              <ProtectedRoute>
+                <SecretariaDashboard />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/secretaria/estudiantes"
+            element={
+              <ProtectedRoute>
+                <EstudiantesPage />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/secretaria/estudiantes/nuevo"
+            element={
+              <ProtectedRoute>
+                <NuevoEstudiantePage />
               </ProtectedRoute>
             }
           />

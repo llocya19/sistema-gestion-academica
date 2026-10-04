@@ -1,0 +1,128 @@
+.estudiantes-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.estudiantes-buscador {
+  width: 100%;
+  max-width: 420px;
+  padding: 11px 14px;
+
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+
+  font-size: 14px;
+  outline: none;
+}
+
+.estudiantes-buscador:focus {
+  border-color: #e66a19;
+}
+
+.estudiantes-card {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+
+  padding: 24px;
+
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.estudiantes-card h2 {
+  margin-bottom: 20px;
+  font-size: 20px;
+}
+
+.estudiantes-tabla-contenedor {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.estudiantes-tabla {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.estudiantes-tabla th {
+  background: #f9fafb;
+
+  padding: 13px 16px;
+
+  text-align: left;
+  font-size: 13px;
+  color: #4b5563;
+
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.estudiantes-tabla td {
+  padding: 14px 16px;
+
+  border-bottom: 1px solid #eeeeee;
+
+  color: #374151;
+}
+
+.estudiantes-tabla tbody tr:hover {
+  background: #fffaf7;
+}
+
+.estudiante-estado {
+  display: inline-block;
+
+  padding: 5px 10px;
+
+  border-radius: 20px;
+
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.estudiante-estado.activo {
+  background: #ecfdf3;
+  color: #15803d;
+}
+
+.estudiante-estado.inactivo {
+  background: #fef2f2;
+  color: #b91c1c;
+}
+
+.estudiantes-vacio {
+  padding: 25px;
+  text-align: center;
+  color: #6b7280;
+}
+
+.estudiantes-error {
+  padding: 12px 16px;
+
+  background: #fef2f2;
+  color: #b91c1c;
+
+  border-radius: 8px;
+
+  margin-bottom: 16px;
+}
+
+.estudiantes-nuevo {
+  flex-shrink: 0;
+
+  padding: 11px 16px;
+
+  background: #e66a19;
+  color: #ffffff;
+
+  border-radius: 8px;
+
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.estudiantes-nuevo:hover {
+  background: #cf5b12;
+}

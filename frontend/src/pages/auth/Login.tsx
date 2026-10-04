@@ -42,6 +42,8 @@ const handleSubmit = async (e: React.FormEvent) => {
 
     if (response.usuario.rol === "ADMINISTRADOR") {
       navigate("/admin");
+    } else if (response.usuario.rol === "SECRETARIA") {
+      navigate("/secretaria");
     } else {
       navigate("/home");
     }
