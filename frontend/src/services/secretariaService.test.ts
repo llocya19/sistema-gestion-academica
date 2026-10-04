@@ -10,7 +10,9 @@ import api from "../api/axiosConfig";
 
 import {
   obtenerEstudiantes,
-  crearEstudiante
+  crearEstudiante,
+  actualizarEstudiante,
+  cambiarEstadoEstudiante
 } from "./secretariaService";
 
 
@@ -18,6 +20,8 @@ vi.mock("../api/axiosConfig", () => ({
   default: {
     get: vi.fn(),
     post: vi.fn(),
+    put: vi.fn(),
+    patch: vi.fn(),
   },
 }));
 
@@ -59,7 +63,9 @@ describe("secretariaService - HU07", () => {
         "/secretary/students"
       );
 
-      expect(resultado).toEqual(estudiantes);
+      expect(resultado).toEqual(
+        estudiantes
+      );
     }
   );
 
@@ -94,6 +100,76 @@ describe("secretariaService - HU07", () => {
       expect(api.post).toHaveBeenCalledWith(
         "/secretary/students",
         nuevoEstudiante
+      );
+
+      expect(resultado).toEqual(
+        respuestaBackend
+      );
+    }
+  );
+
+
+  it(
+    "envia los datos para actualizar un estudiante",
+    async () => {
+
+      const datosActualizados = {
+        nombres: "Pedro Luis",
+        apellidos: "Perez",
+        student_code: "EST001",
+      };
+
+      const respuestaBackend = {
+        mensaje:
+          "Estudiante actualizado correctamente",
+      };
+
+      vi.mocked(api.put).mockResolvedValue({
+        data: respuestaBackend,
+      });
+
+      const resultado =
+        await actualizarEstudiante(
+          1,
+          datosActualizados
+        );
+
+      expect(api.put).toHaveBeenCalledWith(
+        "/secretary/students/1",
+        datosActualizados
+      );
+
+      expect(resultado).toEqual(
+        respuestaBackend
+      );
+    }
+  );
+
+
+  it(
+    "envia el nuevo estado del estudiante",
+    async () => {
+
+      const respuestaBackend = {
+        mensaje:
+          "Estado actualizado correctamente",
+      };
+
+      vi.mocked(api.patch).mockResolvedValue({
+        data: respuestaBackend,
+      });
+
+      const resultado =
+        await cambiarEstadoEstudiante(
+          1,
+          false
+        );
+
+      expect(api.patch).toHaveBeenCalledWith(
+        "/secretary/students/1/status",
+        {
+          status: false,
+        }
       );
 
       expect(resultado).toEqual(

@@ -3,15 +3,17 @@ import {
   useState
 } from "react";
 
+import { Link } from "react-router-dom";
+
 import {
   obtenerEstudiantes,
+  cambiarEstadoEstudiante,
   type Estudiante
 } from "../../../services/secretariaService";
 
 import SecretariaLayout from "../SecretariaLayout";
 
 import "./EstudiantesPage.css";
-import { Link } from "react-router-dom";
 
 
 function EstudiantesPage() {
@@ -28,6 +30,13 @@ function EstudiantesPage() {
   const [error, setError] =
     useState("");
 
+  const [actualizandoId, setActualizandoId] =
+    useState<number | null>(null);
+
+
+  // ==========================================
+  // CARGAR ESTUDIANTES
+  // ==========================================
 
   useEffect(() => {
 
@@ -61,31 +70,154 @@ function EstudiantesPage() {
   }, []);
 
 
+  // ==========================================
+  // ACTIVAR / DESACTIVAR ESTUDIANTE
+  // ==========================================
+
+  async function manejarCambioEstado(
+  estudiante: Estudiante
+) {
+
+  const nuevoEstado =
+    !estudiante.estado;
+
+  const accion =
+    nuevoEstado
+      ? "activar"
+      : "desactivar";
+
+
+  const confirmar =
+    window.confirm(
+      `¿Deseas ${accion} al estudiante ${estudiante.persona.nombres} ${estudiante.persona.apellidos}?`
+    );
+
+
+  if (!confirmar) {
+    return;
+  }
+
+
+  // Guardamos el estado anterior por si ocurre un error
+  const estadoAnterior =
+    estudiante.estado;
+
+
+  try {
+
+    setError("");
+
+    setActualizandoId(
+      estudiante.id
+    );
+
+
+    // Actualización inmediata en pantalla
+    setEstudiantes(
+      (estudiantesActuales) =>
+        estudiantesActuales.map(
+          (item) =>
+            item.id === estudiante.id
+              ? {
+                  ...item,
+                  estado: nuevoEstado
+                }
+              : item
+        )
+    );
+
+
+    // Guardamos el cambio en el backend
+    await cambiarEstadoEstudiante(
+      estudiante.id,
+      nuevoEstado
+    );
+
+
+  } catch (error) {
+
+    console.error(error);
+
+
+    // Si el backend falla,
+    // regresamos al estado anterior
+    setEstudiantes(
+      (estudiantesActuales) =>
+        estudiantesActuales.map(
+          (item) =>
+            item.id === estudiante.id
+              ? {
+                  ...item,
+                  estado: estadoAnterior
+                }
+              : item
+        )
+    );
+
+
+    setError(
+      "No se pudo actualizar el estado del estudiante."
+    );
+
+
+  } finally {
+
+    setActualizandoId(null);
+
+  }
+
+}
+
+
+  // ==========================================
+  // BUSCADOR
+  // ==========================================
+
   const textoBusqueda =
-    busqueda.toLowerCase().trim();
+    busqueda
+      .toLowerCase()
+      .trim();
 
 
   const estudiantesFiltrados =
-    estudiantes.filter((estudiante) => {
+  estudiantes
+    .filter(
+      (estudiante) => {
 
-      const nombreCompleto =
-        `${estudiante.persona.nombres} ${estudiante.persona.apellidos}`
-          .toLowerCase();
+        const nombreCompleto =
+          `${estudiante.persona.nombres} ${estudiante.persona.apellidos}`
+            .toLowerCase();
 
-      return (
-        estudiante.codigo
-          .toLowerCase()
-          .includes(textoBusqueda) ||
+        return (
+          estudiante.codigo
+            .toLowerCase()
+            .includes(textoBusqueda)
+          ||
+          estudiante.persona.dni
+            .includes(textoBusqueda)
+          ||
+          nombreCompleto
+            .includes(textoBusqueda)
+        );
 
-        estudiante.persona.dni
-          .includes(textoBusqueda) ||
+      }
+    )
+    .sort(
+      (a, b) =>
+        a.codigo.localeCompare(
+          b.codigo,
+          undefined,
+          {
+            numeric: true,
+            sensitivity: "base"
+          }
+        )
+    );
 
-        nombreCompleto
-          .includes(textoBusqueda)
-      );
 
-    });
-
+  // ==========================================
+  // INTERFAZ
+  // ==========================================
 
   return (
 
@@ -93,7 +225,9 @@ function EstudiantesPage() {
 
       <div className="secretaria-page-title">
 
-        <h1>Gestión de estudiantes</h1>
+        <h1>
+          Gestión de estudiantes
+        </h1>
 
         <p>
           Consulta y administra los estudiantes
@@ -105,6 +239,10 @@ function EstudiantesPage() {
 
       <section className="estudiantes-card">
 
+        {/* ============================= */}
+        {/* BUSCADOR Y NUEVO ESTUDIANTE */}
+        {/* ============================= */}
+
         <div className="estudiantes-toolbar">
 
           <input
@@ -112,10 +250,13 @@ function EstudiantesPage() {
             className="estudiantes-buscador"
             placeholder="Buscar por código, DNI o nombre..."
             value={busqueda}
-            onChange={(e) =>
-              setBusqueda(e.target.value)
+            onChange={(event) =>
+              setBusqueda(
+                event.target.value
+              )
             }
           />
+
 
           <Link
             to="/secretaria/estudiantes/nuevo"
@@ -124,26 +265,45 @@ function EstudiantesPage() {
             + Nuevo estudiante
           </Link>
 
-          
-
-
         </div>
 
 
-        <h2>Estudiantes registrados</h2>
+        <h2>
+          Estudiantes registrados
+        </h2>
 
+
+        {/* ============================= */}
+        {/* CARGANDO */}
+        {/* ============================= */}
 
         {cargando && (
-          <p>Cargando estudiantes...</p>
+
+          <p>
+            Cargando estudiantes...
+          </p>
+
         )}
 
+
+        {/* ============================= */}
+        {/* ERROR */}
+        {/* ============================= */}
 
         {error && (
+
           <div className="estudiantes-error">
+
             {error}
+
           </div>
+
         )}
 
+
+        {/* ============================= */}
+        {/* SIN RESULTADOS */}
+        {/* ============================= */}
 
         {!cargando &&
           !error &&
@@ -160,6 +320,10 @@ function EstudiantesPage() {
           )}
 
 
+        {/* ============================= */}
+        {/* TABLA DE ESTUDIANTES */}
+        {/* ============================= */}
+
         {!cargando &&
           !error &&
           estudiantesFiltrados.length > 0 && (
@@ -171,14 +335,35 @@ function EstudiantesPage() {
                 <thead>
 
                   <tr>
-                    <th>Código</th>
-                    <th>DNI</th>
-                    <th>Nombres</th>
-                    <th>Apellidos</th>
-                    <th>Estado</th>
+
+                    <th>
+                      Código
+                    </th>
+
+                    <th>
+                      DNI
+                    </th>
+
+                    <th>
+                      Nombres
+                    </th>
+
+                    <th>
+                      Apellidos
+                    </th>
+
+                    <th>
+                      Estado
+                    </th>
+
+                    <th>
+                      Acciones
+                    </th>
+
                   </tr>
 
                 </thead>
+
 
                 <tbody>
 
@@ -187,21 +372,35 @@ function EstudiantesPage() {
 
                       <tr key={estudiante.id}>
 
+                        {/* CÓDIGO */}
+
                         <td>
                           {estudiante.codigo}
                         </td>
+
+
+                        {/* DNI */}
 
                         <td>
                           {estudiante.persona.dni}
                         </td>
 
+
+                        {/* NOMBRES */}
+
                         <td>
                           {estudiante.persona.nombres}
                         </td>
 
+
+                        {/* APELLIDOS */}
+
                         <td>
                           {estudiante.persona.apellidos}
                         </td>
+
+
+                        {/* ESTADO */}
 
                         <td>
 
@@ -212,10 +411,68 @@ function EstudiantesPage() {
                                 : "estudiante-estado inactivo"
                             }
                           >
+
                             {estudiante.estado
                               ? "Activo"
                               : "Inactivo"}
+
                           </span>
+
+                        </td>
+
+
+                        {/* ACCIONES */}
+
+                        <td>
+
+                          <div className="estudiante-acciones">
+
+                            {/* EDITAR */}
+
+                            <Link
+                              to={
+                                `/secretaria/estudiantes/${estudiante.id}/editar`
+                              }
+                              className="estudiante-editar"
+                            >
+                              Editar
+                            </Link>
+
+
+                            {/* ACTIVAR / DESACTIVAR */}
+
+                            <button
+                              type="button"
+                              className={
+                                estudiante.estado
+                                  ? "estudiante-cambiar-estado desactivar"
+                                  : "estudiante-cambiar-estado activar"
+                              }
+                              disabled={
+                                actualizandoId !== null
+                              }
+                              onClick={() =>
+                                manejarCambioEstado(
+                                  estudiante
+                                )
+                              }
+                            >
+
+                              {actualizandoId ===
+                              estudiante.id
+
+                                ? "Actualizando..."
+
+                                : estudiante.estado
+
+                                  ? "Desactivar"
+
+                                  : "Activar"
+                              }
+
+                            </button>
+
+                          </div>
 
                         </td>
 
@@ -237,6 +494,7 @@ function EstudiantesPage() {
     </SecretariaLayout>
 
   );
+
 }
 
 

@@ -126,3 +126,60 @@
 .estudiantes-nuevo:hover {
   background: #cf5b12;
 }
+
+
+.estudiante-editar {
+  display: inline-block;
+  padding: 7px 14px;
+  border-radius: 7px;
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 600;
+  background: #fff3e8;
+  color: #d86500;
+  transition: 0.2s ease;
+}
+
+.estudiante-editar:hover {
+  background: #ffe1c4;
+}
+
+.estudiante-acciones {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.estudiante-cambiar-estado {
+  border: none;
+  padding: 7px 12px;
+  border-radius: 7px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.estudiante-cambiar-estado.desactivar {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+.estudiante-cambiar-estado.desactivar:hover {
+  background: #fecaca;
+}
+
+.estudiante-cambiar-estado.activar {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+.estudiante-cambiar-estado.activar:hover {
+  background: #bbf7d0;
+}
+
+.estudiante-cambiar-estado:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}

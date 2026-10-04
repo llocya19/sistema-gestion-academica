@@ -14,6 +14,7 @@ import NuevoUsuarioPage from "../pages/admin/usuarios/NuevoUsuarioPage";
 import SecretariaDashboard from "../pages/secretaria/SecretariaDashboard";
 import EstudiantesPage from "../pages/secretaria/estudiantes/EstudiantesPage";
 import NuevoEstudiantePage from "../pages/secretaria/estudiantes/NuevoEstudiantePage";
+import EditarEstudiantePage from "../pages/secretaria/estudiantes/EditarEstudiantePage";
 
 
 function AppRouter() {
@@ -90,6 +91,15 @@ function AppRouter() {
             element={
               <ProtectedRoute>
                 <NuevoEstudiantePage />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/secretaria/estudiantes/:id/editar"
+            element={
+              <ProtectedRoute>
+                <EditarEstudiantePage />
               </ProtectedRoute>
             }
           />

@@ -8,7 +8,8 @@ import {
 
 import {
   render,
-  screen
+  screen,
+  waitFor
 } from "@testing-library/react";
 
 import userEvent from "@testing-library/user-event";
@@ -24,7 +25,8 @@ import {
 import EstudiantesPage from "./EstudiantesPage";
 
 import {
-  obtenerEstudiantes
+  obtenerEstudiantes,
+  cambiarEstadoEstudiante
 } from "../../../services/secretariaService";
 
 
@@ -33,6 +35,7 @@ vi.mock(
   () => ({
     obtenerEstudiantes: vi.fn(),
     crearEstudiante: vi.fn(),
+    cambiarEstadoEstudiante: vi.fn(),
   })
 );
 
@@ -284,6 +287,160 @@ describe("EstudiantesPage - HU07", () => {
       expect(
         screen.getByText("Inactivo")
       ).toBeInTheDocument();
+    }
+  );
+
+    it(
+    "ordena los estudiantes por codigo de menor a mayor",
+    async () => {
+
+      const estudiantesDesordenados = [
+        estudiantesPrueba[2],
+        estudiantesPrueba[0],
+        estudiantesPrueba[1],
+      ];
+
+      vi.mocked(
+        obtenerEstudiantes
+      ).mockResolvedValue(
+        estudiantesDesordenados
+      );
+
+      renderizarPagina();
+
+      await screen.findByText("EST001");
+
+      const codigos =
+        screen
+          .getAllByText(/EST00[1-3]/)
+          .map(
+            (elemento) =>
+              elemento.textContent
+          );
+
+      expect(codigos).toEqual([
+        "EST001",
+        "EST002",
+        "EST003",
+      ]);
+    }
+  );
+
+
+  it(
+    "desactiva un estudiante",
+    async () => {
+
+      const user =
+        userEvent.setup();
+
+      vi.mocked(
+        obtenerEstudiantes
+      ).mockResolvedValue(
+        estudiantesPrueba
+      );
+
+      vi.mocked(
+        cambiarEstadoEstudiante
+      ).mockResolvedValue({
+        mensaje:
+          "Estado actualizado correctamente",
+      });
+
+      vi.spyOn(
+        window,
+        "confirm"
+      ).mockReturnValue(true);
+
+      renderizarPagina();
+
+      await screen.findByText("EST001");
+
+      const botonesDesactivar =
+        screen.getAllByRole(
+          "button",
+          {
+            name: "Desactivar",
+          }
+        );
+
+      await user.click(
+        botonesDesactivar[0]
+      );
+
+      await waitFor(() => {
+
+        expect(
+          cambiarEstadoEstudiante
+        ).toHaveBeenCalledWith(
+          1,
+          false
+        );
+
+      });
+
+      expect(
+        screen.getAllByText("Inactivo")
+      ).toHaveLength(2);
+    }
+  );
+
+
+  it(
+    "activa un estudiante inactivo",
+    async () => {
+
+      const user =
+        userEvent.setup();
+
+      vi.mocked(
+        obtenerEstudiantes
+      ).mockResolvedValue(
+        estudiantesPrueba
+      );
+
+      vi.mocked(
+        cambiarEstadoEstudiante
+      ).mockResolvedValue({
+        mensaje:
+          "Estado actualizado correctamente",
+      });
+
+      vi.spyOn(
+        window,
+        "confirm"
+      ).mockReturnValue(true);
+
+      renderizarPagina();
+
+      await screen.findByText("EST003");
+
+      const botonActivar =
+        screen.getByRole(
+          "button",
+          {
+            name: "Activar",
+          }
+        );
+
+      await user.click(
+        botonActivar
+      );
+
+      await waitFor(() => {
+
+        expect(
+          cambiarEstadoEstudiante
+        ).toHaveBeenCalledWith(
+          3,
+          true
+        );
+
+      });
+
+      expect(
+        screen.getAllByText("Activo")
+      ).toHaveLength(3);
     }
   );
 
