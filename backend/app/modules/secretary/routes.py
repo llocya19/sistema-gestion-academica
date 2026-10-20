@@ -179,7 +179,13 @@ def update_student(id):
 
 
                     "apellidos":
-                    estudiante.persona.apellidos
+                    estudiante.persona.apellidos,
+
+                    "telefono":
+                    estudiante.persona.telefono,
+
+                    "direccion":
+                    estudiante.persona.direccion
 
                 }
 

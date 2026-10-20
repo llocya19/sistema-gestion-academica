@@ -1,6 +1,9 @@
+
 import {
   useEffect,
-  useState
+  useRef,
+  useState,
+  type ChangeEvent
 } from "react";
 
 import { Link } from "react-router-dom";
@@ -8,255 +11,211 @@ import { Link } from "react-router-dom";
 import {
   obtenerEstudiantes,
   cambiarEstadoEstudiante,
-  type Estudiante
+  importarEstudiantesExcel,
+  type Estudiante,
+  type RespuestaImportacion
 } from "../../../services/secretariaService";
 
 import SecretariaLayout from "../SecretariaLayout";
-
 import "./EstudiantesPage.css";
 
+type FiltroEstado = "todos" | "activos" | "inactivos";
 
 function EstudiantesPage() {
-
   const [estudiantes, setEstudiantes] =
     useState<Estudiante[]>([]);
 
-  const [busqueda, setBusqueda] =
-    useState("");
+  const [busqueda, setBusqueda] = useState("");
+  const [filtroEstado, setFiltroEstado] =
+    useState<FiltroEstado>("todos");
 
-  const [cargando, setCargando] =
-    useState(true);
-
-  const [error, setError] =
-    useState("");
+  const [cargando, setCargando] = useState(true);
+  const [error, setError] = useState("");
 
   const [actualizandoId, setActualizandoId] =
     useState<number | null>(null);
 
+  const [importando, setImportando] = useState(false);
+  const [errorImportacion, setErrorImportacion] =
+    useState("");
 
-  // ==========================================
-  // CARGAR ESTUDIANTES
-  // ==========================================
+  const [resultadoImportacion, setResultadoImportacion] =
+    useState<RespuestaImportacion | null>(null);
 
+  const archivoInput = useRef<HTMLInputElement>(null);
+
+  // Cargar estudiantes
   useEffect(() => {
-
     async function cargarEstudiantes() {
-
       try {
-
-        const datos =
-          await obtenerEstudiantes();
-
+        const datos = await obtenerEstudiantes();
         setEstudiantes(datos);
-
       } catch (error) {
-
         console.error(error);
-
-        setError(
-          "No se pudieron cargar los estudiantes."
-        );
-
+        setError("No se pudieron cargar los estudiantes.");
       } finally {
-
         setCargando(false);
-
       }
-
     }
 
     cargarEstudiantes();
-
   }, []);
 
+  // Activar / desactivar
+  async function manejarCambioEstado(estudiante: Estudiante) {
+    const nuevoEstado = !estudiante.estado;
+    const accion = nuevoEstado ? "activar" : "desactivar";
 
-  // ==========================================
-  // ACTIVAR / DESACTIVAR ESTUDIANTE
-  // ==========================================
-
-  async function manejarCambioEstado(
-  estudiante: Estudiante
-) {
-
-  const nuevoEstado =
-    !estudiante.estado;
-
-  const accion =
-    nuevoEstado
-      ? "activar"
-      : "desactivar";
-
-
-  const confirmar =
-    window.confirm(
+    const confirmar = window.confirm(
       `¿Deseas ${accion} al estudiante ${estudiante.persona.nombres} ${estudiante.persona.apellidos}?`
     );
 
+    if (!confirmar) return;
 
-  if (!confirmar) {
-    return;
+    const estadoAnterior = estudiante.estado;
+
+    try {
+      setError("");
+      setActualizandoId(estudiante.id);
+
+      setEstudiantes((actuales) =>
+        actuales.map((item) =>
+          item.id === estudiante.id
+            ? { ...item, estado: nuevoEstado }
+            : item
+        )
+      );
+
+      await cambiarEstadoEstudiante(
+        estudiante.id,
+        nuevoEstado
+      );
+    } catch (error) {
+      console.error(error);
+
+      setEstudiantes((actuales) =>
+        actuales.map((item) =>
+          item.id === estudiante.id
+            ? { ...item, estado: estadoAnterior }
+            : item
+        )
+      );
+
+      setError(
+        "No se pudo actualizar el estado del estudiante."
+      );
+    } finally {
+      setActualizandoId(null);
+    }
   }
 
+  // Importar Excel
+  async function manejarImportacion(
+    event: ChangeEvent<HTMLInputElement>
+  ) {
+    const archivo = event.target.files?.[0];
 
-  // Guardamos el estado anterior por si ocurre un error
-  const estadoAnterior =
-    estudiante.estado;
+    if (!archivo) return;
 
+    setErrorImportacion("");
+    setResultadoImportacion(null);
 
-  try {
+    if (!archivo.name.toLowerCase().endsWith(".xlsx")) {
+      setErrorImportacion(
+        "Selecciona un archivo Excel con extensión .xlsx."
+      );
+      event.target.value = "";
+      return;
+    }
 
-    setError("");
+    setImportando(true);
 
-    setActualizandoId(
-      estudiante.id
-    );
+    try {
+      const respuesta = await importarEstudiantesExcel(archivo);
+      setResultadoImportacion(respuesta);
 
-
-    // Actualización inmediata en pantalla
-    setEstudiantes(
-      (estudiantesActuales) =>
-        estudiantesActuales.map(
-          (item) =>
-            item.id === estudiante.id
-              ? {
-                  ...item,
-                  estado: nuevoEstado
-                }
-              : item
-        )
-    );
-
-
-    // Guardamos el cambio en el backend
-    await cambiarEstadoEstudiante(
-      estudiante.id,
-      nuevoEstado
-    );
-
-
-  } catch (error) {
-
-    console.error(error);
-
-
-    // Si el backend falla,
-    // regresamos al estado anterior
-    setEstudiantes(
-      (estudiantesActuales) =>
-        estudiantesActuales.map(
-          (item) =>
-            item.id === estudiante.id
-              ? {
-                  ...item,
-                  estado: estadoAnterior
-                }
-              : item
-        )
-    );
-
-
-    setError(
-      "No se pudo actualizar el estado del estudiante."
-    );
-
-
-  } finally {
-
-    setActualizandoId(null);
-
-  }
-
-}
-
-
-  // ==========================================
-  // BUSCADOR
-  // ==========================================
-
-  const textoBusqueda =
-    busqueda
-      .toLowerCase()
-      .trim();
-
-
-  const estudiantesFiltrados =
-  estudiantes
-    .filter(
-      (estudiante) => {
-
-        const nombreCompleto =
-          `${estudiante.persona.nombres} ${estudiante.persona.apellidos}`
-            .toLowerCase();
-
-        return (
-          estudiante.codigo
-            .toLowerCase()
-            .includes(textoBusqueda)
-          ||
-          estudiante.persona.dni
-            .includes(textoBusqueda)
-          ||
-          nombreCompleto
-            .includes(textoBusqueda)
+      // Actualizar el listado después de importar
+      try {
+        const datosActualizados = await obtenerEstudiantes();
+        setEstudiantes(datosActualizados);
+        setError("");
+      } catch (error) {
+        console.error(error);
+        setErrorImportacion(
+          "La importación se procesó, pero no se pudo actualizar el listado. Recarga la página para consultar los registros."
         );
-
       }
-    )
-    .sort(
-      (a, b) =>
-        a.codigo.localeCompare(
-          b.codigo,
-          undefined,
-          {
-            numeric: true,
-            sensitivity: "base"
-          }
-        )
+    } catch (error) {
+      console.error(error);
+      setErrorImportacion(
+        "No se pudo procesar el archivo Excel. Verifica su formato antes de intentarlo nuevamente."
+      );
+    } finally {
+      setImportando(false);
+      event.target.value = "";
+    }
+  }
+
+  // Búsqueda y filtros
+  const textoBusqueda = busqueda.toLowerCase().trim();
+
+  const estudiantesFiltrados = estudiantes
+    .filter((estudiante) => {
+      const nombreCompleto =
+        `${estudiante.persona.nombres} ${estudiante.persona.apellidos}`
+          .toLowerCase();
+
+      const coincideBusqueda =
+        estudiante.codigo.toLowerCase().includes(textoBusqueda) ||
+        estudiante.persona.dni.includes(textoBusqueda) ||
+        nombreCompleto.includes(textoBusqueda);
+
+      const coincideEstado =
+        filtroEstado === "todos" ||
+        (filtroEstado === "activos" && estudiante.estado) ||
+        (filtroEstado === "inactivos" && !estudiante.estado);
+
+      return coincideBusqueda && coincideEstado;
+    })
+    .sort((a, b) =>
+      a.codigo.localeCompare(b.codigo, undefined, {
+        numeric: true,
+        sensitivity: "base"
+      })
     );
-
-
-  // ==========================================
-  // INTERFAZ
-  // ==========================================
 
   return (
-
     <SecretariaLayout>
+      {/* Encabezado */}
+      <div className="estudiantes-encabezado">
+        <div className="secretaria-page-title">
+          <h1>Gestión de estudiantes</h1>
+          <p>
+            {estudiantes.length} estudiantes registrados
+            en el sistema
+          </p>
+        </div>
 
-      <div className="secretaria-page-title">
-
-        <h1>
-          Gestión de estudiantes
-        </h1>
-
-        <p>
-          Consulta y administra los estudiantes
-          registrados en el sistema.
-        </p>
-
-      </div>
-
-
-      <section className="estudiantes-card">
-
-        {/* ============================= */}
-        {/* BUSCADOR Y NUEVO ESTUDIANTE */}
-        {/* ============================= */}
-
-        <div className="estudiantes-toolbar">
-
+        <div className="estudiantes-acciones-principales">
           <input
-            type="search"
-            className="estudiantes-buscador"
-            placeholder="Buscar por código, DNI o nombre..."
-            value={busqueda}
-            onChange={(event) =>
-              setBusqueda(
-                event.target.value
-              )
-            }
+            ref={archivoInput}
+            type="file"
+            accept=".xlsx"
+            aria-label="Seleccionar Excel de estudiantes"
+            onChange={manejarImportacion}
+            style={{ display: "none" }}
           />
 
+          <button
+            type="button"
+            className="estudiantes-importar"
+            disabled={importando}
+            onClick={() => archivoInput.current?.click()}
+          >
+            {importando
+              ? "Importando..."
+              : "Importar Excel"}
+          </button>
 
           <Link
             to="/secretaria/estudiantes/nuevo"
@@ -264,238 +223,226 @@ function EstudiantesPage() {
           >
             + Nuevo estudiante
           </Link>
-
         </div>
+      </div>
 
+      {/* Resultado de importación */}
+      {errorImportacion && (
+        <div className="estudiantes-error" role="alert">
+          {errorImportacion}
+        </div>
+      )}
 
-        <h2>
-          Estudiantes registrados
-        </h2>
-
-
-        {/* ============================= */}
-        {/* CARGANDO */}
-        {/* ============================= */}
-
-        {cargando && (
+      {resultadoImportacion && (
+        <section className="estudiantes-importacion-resultado">
+          <h3>Resultado de importación</h3>
 
           <p>
-            Cargando estudiantes...
+            Estudiantes creados:{" "}
+            <strong>
+              {resultadoImportacion.resultado.creados}
+            </strong>
           </p>
 
+          <p>
+            Filas con errores:{" "}
+            <strong>
+              {resultadoImportacion.resultado.errores.length}
+            </strong>
+          </p>
+
+          {resultadoImportacion.resultado.errores.length > 0 && (
+            <ul>
+              {resultadoImportacion.resultado.errores.map(
+                (item, indice) => (
+                  <li key={`${item.fila}-${indice}`}>
+                    Fila {item.fila}: {item.error}
+                  </li>
+                )
+              )}
+            </ul>
+          )}
+        </section>
+      )}
+
+      {/* Filtros */}
+      <section className="estudiantes-card estudiantes-filtros">
+        <div className="estudiantes-toolbar">
+          <input
+            type="search"
+            className="estudiantes-buscador"
+            placeholder="Buscar por código, DNI o nombre..."
+            value={busqueda}
+            onChange={(event) =>
+              setBusqueda(event.target.value)
+            }
+          />
+
+          <select
+            className="estudiantes-select"
+            aria-label="Filtrar por estado"
+            value={filtroEstado}
+            onChange={(event) =>
+              setFiltroEstado(
+                event.target.value as FiltroEstado
+              )
+            }
+          >
+            <option value="todos">Todos los estados</option>
+            <option value="activos">Activos</option>
+            <option value="inactivos">Inactivos</option>
+          </select>
+        </div>
+
+        <p className="estudiantes-nota-filtros">
+          Los filtros de año, grado y sección se habilitarán
+          cuando esté integrada la asociación académica.
+        </p>
+      </section>
+
+      {/* Listado */}
+      <section className="estudiantes-card estudiantes-listado">
+        <div className="estudiantes-listado-cabecera">
+          <h2>Estudiantes registrados</h2>
+          <span>
+            {estudiantesFiltrados.length} resultados
+          </span>
+        </div>
+
+        {cargando && (
+          <p>Cargando estudiantes...</p>
         )}
-
-
-        {/* ============================= */}
-        {/* ERROR */}
-        {/* ============================= */}
 
         {error && (
-
-          <div className="estudiantes-error">
-
+          <div className="estudiantes-error" role="alert">
             {error}
-
           </div>
-
         )}
-
-
-        {/* ============================= */}
-        {/* SIN RESULTADOS */}
-        {/* ============================= */}
 
         {!cargando &&
           !error &&
           estudiantesFiltrados.length === 0 && (
-
             <div className="estudiantes-vacio">
-
-              {busqueda
+              {busqueda || filtroEstado !== "todos"
                 ? "No se encontraron estudiantes."
                 : "No hay estudiantes registrados."}
-
             </div>
-
           )}
-
-
-        {/* ============================= */}
-        {/* TABLA DE ESTUDIANTES */}
-        {/* ============================= */}
 
         {!cargando &&
           !error &&
           estudiantesFiltrados.length > 0 && (
-
             <div className="estudiantes-tabla-contenedor">
-
               <table className="estudiantes-tabla">
-
                 <thead>
-
                   <tr>
-
-                    <th>
-                      Código
-                    </th>
-
-                    <th>
-                      DNI
-                    </th>
-
-                    <th>
-                      Nombres
-                    </th>
-
-                    <th>
-                      Apellidos
-                    </th>
-
-                    <th>
-                      Estado
-                    </th>
-
-                    <th>
-                      Acciones
-                    </th>
-
+                    <th>Código</th>
+                    <th>Estudiante</th>
+                    <th>Grado</th>
+                    <th>Sección</th>
+                    <th>Estado</th>
+                    <th>Acciones</th>
                   </tr>
-
                 </thead>
 
-
                 <tbody>
+                  {estudiantesFiltrados.map((estudiante) => (
+                    <tr key={estudiante.id}>
+                      <td>{estudiante.codigo}</td>
 
-                  {estudiantesFiltrados.map(
-                    (estudiante) => (
-
-                      <tr key={estudiante.id}>
-
-                        {/* CÓDIGO */}
-
-                        <td>
-                          {estudiante.codigo}
-                        </td>
-
-
-                        {/* DNI */}
-
-                        <td>
-                          {estudiante.persona.dni}
-                        </td>
-
-
-                        {/* NOMBRES */}
-
-                        <td>
-                          {estudiante.persona.nombres}
-                        </td>
-
-
-                        {/* APELLIDOS */}
-
-                        <td>
-                          {estudiante.persona.apellidos}
-                        </td>
-
-
-                        {/* ESTADO */}
-
-                        <td>
-
-                          <span
-                            className={
-                              estudiante.estado
-                                ? "estudiante-estado activo"
-                                : "estudiante-estado inactivo"
-                            }
-                          >
-
-                            {estudiante.estado
-                              ? "Activo"
-                              : "Inactivo"}
-
+                      <td>
+                        <div className="estudiantes-identidad">
+                          <span className="estudiantes-avatar">
+                            {estudiante.persona.nombres
+                              .charAt(0)
+                              .toUpperCase()}
                           </span>
 
-                        </td>
+                          <div>
+                            <div className="estudiantes-nombre">
+                              <span>{estudiante.persona.nombres}</span>
+                              {" "}
+                              <span>{estudiante.persona.apellidos}</span>
+                            </div>
 
-
-                        {/* ACCIONES */}
-
-                        <td>
-
-                          <div className="estudiante-acciones">
-
-                            {/* EDITAR */}
-
-                            <Link
-                              to={
-                                `/secretaria/estudiantes/${estudiante.id}/editar`
-                              }
-                              className="estudiante-editar"
-                            >
-                              Editar
-                            </Link>
-
-
-                            {/* ACTIVAR / DESACTIVAR */}
-
-                            <button
-                              type="button"
-                              className={
-                                estudiante.estado
-                                  ? "estudiante-cambiar-estado desactivar"
-                                  : "estudiante-cambiar-estado activar"
-                              }
-                              disabled={
-                                actualizandoId !== null
-                              }
-                              onClick={() =>
-                                manejarCambioEstado(
-                                  estudiante
-                                )
-                              }
-                            >
-
-                              {actualizandoId ===
-                              estudiante.id
-
-                                ? "Actualizando..."
-
-                                : estudiante.estado
-
-                                  ? "Desactivar"
-
-                                  : "Activar"
-                              }
-
-                            </button>
-
+                            <div className="estudiantes-dni">
+                              DNI: {estudiante.persona.dni}
+                            </div>
                           </div>
+                        </div>
+                      </td>
 
-                        </td>
+                      <td>
+                        <span className="estudiantes-dato-pendiente">
+                          —
+                        </span>
+                      </td>
 
-                      </tr>
+                      <td>
+                        <span className="estudiantes-dato-pendiente">
+                          —
+                        </span>
+                      </td>
 
-                    )
-                  )}
+                      <td>
+                        <span
+                          className={
+                            estudiante.estado
+                              ? "estudiante-estado activo"
+                              : "estudiante-estado inactivo"
+                          }
+                        >
+                          {estudiante.estado
+                            ? "Activo"
+                            : "Inactivo"}
+                        </span>
+                      </td>
 
+                      <td>
+                        <div className="estudiante-acciones">
+                        <Link
+                          to={`/secretaria/estudiantes/${estudiante.id}`}
+                          className="estudiante-ver-detalle"
+                        >
+                          Ver detalle
+                        </Link>
+
+                          <Link
+                            to={`/secretaria/estudiantes/${estudiante.id}/editar`}
+                            className="estudiante-editar"
+                          >
+                            Editar
+                          </Link>
+
+                          <button
+                            type="button"
+                            className={
+                              estudiante.estado
+                                ? "estudiante-cambiar-estado desactivar"
+                                : "estudiante-cambiar-estado activar"
+                            }
+                            disabled={actualizandoId !== null}
+                            onClick={() =>
+                              manejarCambioEstado(estudiante)
+                            }
+                          >
+                            {actualizandoId === estudiante.id
+                              ? "Actualizando..."
+                              : estudiante.estado
+                                ? "Desactivar"
+                                : "Activar"}
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
                 </tbody>
-
               </table>
-
             </div>
-
           )}
-
       </section>
-
     </SecretariaLayout>
-
   );
-
 }
-
 
 export default EstudiantesPage;

@@ -39,7 +39,11 @@ def listar_estudiantes():
 
                 "nombres": estudiante.persona.nombres,
 
-                "apellidos": estudiante.persona.apellidos
+                "apellidos": estudiante.persona.apellidos,
+
+                "telefono": estudiante.persona.telefono,
+
+                "direccion": estudiante.persona.direccion,
 
             }
 

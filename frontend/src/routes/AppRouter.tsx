@@ -15,6 +15,7 @@ import SecretariaDashboard from "../pages/secretaria/SecretariaDashboard";
 import EstudiantesPage from "../pages/secretaria/estudiantes/EstudiantesPage";
 import NuevoEstudiantePage from "../pages/secretaria/estudiantes/NuevoEstudiantePage";
 import EditarEstudiantePage from "../pages/secretaria/estudiantes/EditarEstudiantePage";
+import DetalleEstudiantePage from "../pages/secretaria/estudiantes/DetalleEstudiantePage";
 
 
 function AppRouter() {
@@ -104,6 +105,14 @@ function AppRouter() {
             }
           />
 
+          <Route
+            path="/secretaria/estudiantes/:id"
+            element={
+              <ProtectedRoute>
+                <DetalleEstudiantePage />
+              </ProtectedRoute>
+            }
+          />
 
 
         </Routes>

@@ -41,6 +41,10 @@ function EditarEstudiantePage() {
   const [apellidos, setApellidos] =
     useState("");
 
+  const [telefono, setTelefono] = useState("");
+
+  const [direccion, setDireccion] = useState("");
+
   const [cargandoDatos, setCargandoDatos] =
     useState(true);
 
@@ -91,6 +95,14 @@ function EditarEstudiantePage() {
 
         setApellidos(
           estudiante.persona.apellidos
+        );
+
+        setTelefono(
+          estudiante.persona.telefono ?? ""
+        );
+
+        setDireccion(
+          estudiante.persona.direccion ?? ""
         );
 
       } catch (error) {
@@ -146,6 +158,8 @@ function EditarEstudiantePage() {
           apellidos: apellidos.trim(),
           student_code:
             studentCode.trim(),
+          telefono: telefono.trim(),
+          direccion: direccion.trim(),
         }
       );
 
@@ -308,6 +322,39 @@ function EditarEstudiantePage() {
                     required
                     />
 
+                </div>
+
+                <div className="nuevo-estudiante-campo">
+                  <label htmlFor="telefono">
+                    Celular
+                  </label>
+
+                  <input
+                    id="telefono"
+                    type="tel"
+                    value={telefono}
+                    onChange={(event) =>
+                      setTelefono(event.target.value)
+                    }
+                    placeholder="Ej. 987654321"
+                    maxLength={9}
+                  />
+                </div>
+
+                <div className="nuevo-estudiante-campo">
+                  <label htmlFor="direccion">
+                    Dirección
+                  </label>
+
+                  <input
+                    id="direccion"
+                    type="text"
+                    value={direccion}
+                    onChange={(event) =>
+                      setDireccion(event.target.value)
+                    }
+                    placeholder="Ingrese la dirección"
+                  />
                 </div>
 
                 </div>

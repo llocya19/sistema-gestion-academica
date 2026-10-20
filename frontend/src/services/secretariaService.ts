@@ -9,8 +9,11 @@ export interface Estudiante {
     dni: string;
     nombres: string;
     apellidos: string;
+    telefono?: string | null;
+    direccion?: string | null;
   };
 }
+
 export async function obtenerEstudiantes(): Promise<Estudiante[]> {
   const respuesta = await api.get("/secretary/students");
 
@@ -41,7 +44,10 @@ export interface ActualizarEstudiante {
   nombres: string;
   apellidos: string;
   student_code: string;
+  telefono?: string;
+  direccion?: string;
 }
+
 
 export async function actualizarEstudiante(
   id: number,
@@ -64,6 +70,34 @@ export async function cambiarEstadoEstudiante(
     {
       status: estado,
     }
+  );
+
+  return respuesta.data;
+}
+
+export interface ErrorImportacion {
+  fila: number;
+  error: string;
+}
+
+export interface RespuestaImportacion {
+  mensaje: string;
+  resultado: {
+    creados: number;
+    errores: ErrorImportacion[];
+  };
+}
+
+export async function importarEstudiantesExcel(
+  archivo: File
+): Promise<RespuestaImportacion> {
+  const formulario = new FormData();
+
+  formulario.append("file", archivo);
+
+  const respuesta = await api.post(
+    "/secretary/students/import",
+    formulario
   );
 
   return respuesta.data;
